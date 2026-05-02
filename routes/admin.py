@@ -558,8 +558,15 @@ def auto_update_order_amounts():
         logging.info(f"Received data: {data}")
         
         # Validate CSRF token
+        csrf_token = data.get('csrf_token')
+        logging.info(f"CSRF token received: {csrf_token}")
+        
+        if not csrf_token:
+            logging.error("No CSRF token provided")
+            return jsonify({'success': False, 'message': 'CSRF token is missing'}), 400
+        
         try:
-            validate_csrf(data.get('csrf_token'))
+            validate_csrf(csrf_token)
             logging.info("CSRF token validated successfully")
         except Exception as e:
             logging.error(f"CSRF token validation failed: {str(e)}")
