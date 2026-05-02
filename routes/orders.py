@@ -931,8 +931,8 @@ def paypal_payment():
             try:
                 order_data = mongo.db.orders.find_one({'_id': string_to_object_id(order_id)})
                 if order_data:
-                    # Import the notification function from app
-                    from app import send_payment_notification
+                    # Import the notification functions from app
+                    from app import send_payment_notification, send_telegram_photo
                     
                     # Determine amount based on payment type
                     if payment_type == 'deposit':
