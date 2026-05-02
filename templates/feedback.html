@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Your Feedback - NEXAweb</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cyber-cyan': '#06b6d4',
+                        'cyber-teal': '#14b8a6',
+                        'cyber-purple': '#a855f7',
+                        'cyber-pink': '#ec4899',
+                        'deep-black': '#050505',
+                        'matrix-green': '#00ff41'
+                    },
+                    fontFamily: {
+                        'cyber': ['Orbitron', 'monospace'],
+                        'rajdhani': ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-deep-black text-white font-rajdhani">
+    <!-- Background Grid -->
+    <div class="fixed inset-0 cyber-grid opacity-20"></div>
+    
+    <!-- Animated background elements -->
+    <div class="absolute top-20 left-10 w-32 h-32 bg-cyber-cyan/10 rounded-full blur-3xl animate-pulse"></div>
+    <div class="absolute bottom-20 right-10 w-48 h-48 bg-cyber-purple/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+
+    <!-- Navigation -->
+    <nav class="relative z-10 glass-heavy border-b border-cyber-cyan/30">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-gradient-to-r from-cyber-cyan to-cyber-teal rounded-lg flex items-center justify-center">
+                        <span class="text-black font-bold text-xl">A</span>
+                    </div>
+                    <span class="text-2xl font-bold font-cyber bg-gradient-to-r from-cyber-cyan to-cyber-teal bg-clip-text text-transparent">
+                        NEXAweb
+                    </span>
+                </div>
+                
+                <div class="flex items-center space-x-6">
+                    <a href="{{ url_for('main.home') }}" class="text-cyber-cyan hover:text-cyber-teal transition-colors">
+                        Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Feedback Form Section -->
+    <section class="min-h-screen pt-24 pb-20 relative bg-gradient-to-br from-slate-900 via-slate-950 to-black">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-cyber-cyan/5 to-transparent"></div>
+        
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="max-w-4xl mx-auto">
+                <!-- Order Info Card -->
+                <div class="backdrop-blur-xl bg-slate-900/40 border border-cyber-cyan/30 rounded-lg p-6 mb-8 shadow-2xl shadow-cyber-cyan/10" data-aos="fade-down">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-bold text-cyber-cyan mb-2">Order Completed!</h2>
+                            <p class="text-gray-300">Thank you for choosing NEXAweb for your project.</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-gray-400">Order ID</div>
+                            <div class="text-2xl font-bold font-cyber text-cyber-teal">#{{ order.id }}</div>
+                            <div class="text-sm text-cyber-cyan">{{ order.tracking_code }}</div>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-cyber-cyan/30">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-400">Project:</span>
+                                <span class="text-cyber-cyan ml-2">{{ order.project_type.title() }}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Customer:</span>
+                                <span class="text-cyber-cyan ml-2">{{ order.name }}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Completed:</span>
+                                <span class="text-cyber-cyan ml-2">{{ order.created_at.strftime('%Y-%m-%d') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feedback Form -->
+                <div class="backdrop-blur-xl bg-slate-900/40 border border-cyber-cyan/30 rounded-lg p-8 shadow-2xl shadow-cyber-cyan/10" data-aos="fade-up">
+                    <h1 class="text-4xl md:text-5xl font-bold font-cyber mb-4 text-center">
+                        <span class="bg-gradient-to-r from-cyber-cyan to-cyber-teal bg-clip-text text-transparent">
+                            Share Your Experience
+                        </span>
+                    </h1>
+                    
+                    <p class="text-xl text-cyber-cyan text-center mb-8">
+                        Your feedback helps us improve our services
+                    </p>
+
+                    
+                    <form method="POST" action="{{ url_for('orders.submit_testimonial', tracking_code=tracking_code) }}" class="space-y-6">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <!-- Customer Name -->
+                        <div class="form-group">
+                            <label class="block text-cyber-cyan font-semibold mb-2">Your Name *</label>
+                            <input type="text" name="customer_name" required maxlength="100"
+                                   class="w-full px-4 py-3 bg-slate-800/50 border border-cyber-cyan/30 rounded-lg text-white placeholder-gray-400 focus:border-cyber-cyan focus:outline-none focus:shadow-xl focus:shadow-cyber-cyan/40 focus:ring-2 focus:ring-cyber-cyan/20 transition-all duration-300"
+                                   placeholder="Enter your full name"
+                                   value="{{ order.name }}">
+                        </div>
+
+                        <!-- Rating -->
+                        <div class="form-group">
+                            <label class="block text-cyber-cyan font-semibold mb-2">Rating *</label>
+                            <div class="flex items-center space-x-4">
+                                <div class="flex space-x-2" id="star-rating">
+                                    {% for i in range(1, 6) %}
+                                    <button type="button" class="star-btn text-3xl text-gray-500 hover:text-cyber-cyan transition-colors duration-200" data-rating="{{ i }}">
+                                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                        </svg>
+                                    </button>
+                                    {% endfor %}
+                                </div>
+                                <span class="text-gray-400">Click to rate</span>
+                            </div>
+                            <input type="hidden" name="rating" id="rating-input" required>
+                        </div>
+
+                        <!-- Testimonial Content -->
+                        <div class="form-group">
+                            <label class="block text-cyber-cyan font-semibold mb-2">Your Feedback *</label>
+                            <textarea name="content" rows="6" required maxlength="1000"
+                                      class="w-full px-4 py-3 bg-slate-800/50 border border-cyber-cyan/30 rounded-lg text-white placeholder-gray-400 focus:border-cyber-cyan focus:outline-none focus:shadow-xl focus:shadow-cyber-cyan/40 focus:ring-2 focus:ring-cyber-cyan/20 transition-all duration-300"
+                                      placeholder="Share your experience working with NEXAweb..."></textarea>
+                            <div class="text-right mt-2">
+                                <span class="text-xs text-gray-400">
+                                    <span id="char-count">0</span> / 1000 characters
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Security Notice -->
+                        <div class="bg-cyber-purple/20 border border-cyber-purple/30 rounded-lg p-4">
+                            <div class="flex items-center space-x-3">
+                                <svg class="w-5 h-5 text-cyber-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                <div class="text-sm">
+                                    <p class="text-cyber-purple font-semibold">Secure Submission</p>
+                                    <p class="text-gray-300">Your feedback is protected with advanced security measures and will be reviewed before publication.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center">
+                            <button type="submit" 
+                                    class="px-12 py-4 bg-gradient-to-r from-cyber-cyan to-cyber-teal text-white font-bold rounded-lg hover:shadow-lg hover:shadow-cyber-cyan/50 transform hover:scale-105 transition-all duration-300 relative overflow-hidden group">
+                                <span class="relative z-10">Submit Feedback</span>
+                                <div class="absolute inset-0 bg-gradient-to-r from-cyber-cyan to-cyber-teal opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <div class="absolute inset-0 bg-cyber-cyan animate-pulse opacity-20"></div>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+
+        // Star Rating System
+        const stars = document.querySelectorAll('.star-btn');
+        const ratingInput = document.getElementById('rating-input');
+        let currentRating = 0;
+
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                currentRating = parseInt(this.getAttribute('data-rating'));
+                ratingInput.value = currentRating;
+                updateStars();
+            });
+
+            star.addEventListener('mouseenter', function() {
+                const hoverRating = parseInt(this.getAttribute('data-rating'));
+                highlightStars(hoverRating);
+            });
+        });
+
+        document.getElementById('star-rating').addEventListener('mouseleave', function() {
+            updateStars();
+        });
+
+        function updateStars() {
+            highlightStars(currentRating);
+        }
+
+        function highlightStars(rating) {
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.remove('text-gray-500');
+                    star.classList.add('text-cyber-cyan');
+                } else {
+                    star.classList.remove('text-cyber-cyan');
+                    star.classList.add('text-gray-500');
+                }
+            });
+        }
+
+        // Character Counter
+        const textarea = document.querySelector('textarea[name="content"]');
+        const charCount = document.getElementById('char-count');
+
+        textarea.addEventListener('input', function() {
+            const count = this.value.length;
+            charCount.textContent = count;
+            
+            if (count > 900) {
+                charCount.classList.add('text-red-400');
+            } else {
+                charCount.classList.remove('text-red-400');
+            }
+        });
+    </script>
+</body>
+</html>

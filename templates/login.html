@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - NEXAweb</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cyber-cyan': '#06b6d4',
+                        'cyber-teal': '#14b8a6',
+                        'cyber-purple': '#a855f7',
+                        'cyber-pink': '#ec4899',
+                        'cyber-magenta': '#e91e63',
+                        'deep-black': '#050505'
+                    },
+                    fontFamily: {
+                        'cyber': ['Orbitron', 'monospace'],
+                        'rajdhani': ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-cyber-cyan/10 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+    <!-- Toast Container -->
+    <div id="neon-toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+    <!-- Background Grid -->
+    <div class="fixed inset-0 cyber-grid opacity-20"></div>
+    
+    <!-- Login Section -->
+    <section class="min-h-screen flex items-center justify-center relative">
+        <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-black"></div>
+        
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="max-w-md mx-auto">
+                <div class="backdrop-blur-xl bg-slate-900/40 border border-cyber-cyan/30 rounded-lg p-8 shadow-2xl shadow-cyber-cyan/10" data-aos="fade-up">
+                    <!-- Logo/Title -->
+                    <div class="text-center mb-8">
+                        <h1 class="text-3xl font-bold font-cyber mb-2">
+                            <span class="bg-gradient-to-r from-cyber-cyan to-cyber-teal bg-clip-text text-transparent">
+                                ADMIN ACCESS
+                            </span>
+                        </h1>
+                        <p class="text-gray-400">Command Center Login</p>
+                    </div>
+
+                    
+                    <!-- Login Form -->
+                    <form method="POST" action="{{ url_for('auth.login') }}" class="space-y-6">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="form-group">
+                            <label class="block text-cyber-cyan font-semibold mb-2">Username</label>
+                            <input type="text" name="username" required 
+                                   class="w-full px-4 py-3 bg-slate-800/50 border border-cyber-cyan/30 rounded-lg text-white placeholder-gray-400 focus:border-cyber-cyan focus:outline-none focus:shadow-xl focus:shadow-cyber-cyan/40 focus:ring-2 focus:ring-cyber-cyan/20 transition-all duration-300"
+                                   placeholder="admin">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="block text-cyber-cyan font-semibold mb-2">Password</label>
+                            <input type="password" name="password" required 
+                                   class="w-full px-4 py-3 bg-slate-800/50 border border-cyber-cyan/30 rounded-lg text-white placeholder-gray-400 focus:border-cyber-cyan focus:outline-none focus:shadow-xl focus:shadow-cyber-cyan/40 focus:ring-2 focus:ring-cyber-cyan/20 transition-all duration-300"
+                                   placeholder="••••••••">
+                        </div>
+
+                        <button type="submit" 
+                                class="w-full px-8 py-4 bg-gradient-to-r from-cyber-cyan to-cyber-teal text-white font-bold rounded-lg hover:shadow-lg hover:shadow-cyber-cyan/50 transform hover:scale-105 transition-all duration-300 relative overflow-hidden group">
+                            <span class="relative z-10">ACCESS COMMAND CENTER</span>
+                            <div class="absolute inset-0 bg-gradient-to-r from-cyber-cyan to-cyber-teal opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <div class="absolute inset-0 bg-cyber-cyan animate-pulse opacity-20"></div>
+                        </button>
+                    </form>
+
+                    <!-- Back to Home -->
+                    <div class="text-center mt-6">
+                        <a href="{{ url_for('main.home') }}" class="text-cyber-purple hover:text-cyber-pink transition-colors duration-300">
+                            ← Back to Home
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Security Notice -->
+                <div class="mt-8 text-center">
+                    <div class="backdrop-blur-lg bg-slate-900/20 border border-cyber-purple/30 rounded-lg p-4">
+                        <p class="text-xs text-gray-400">
+                            <span class="text-cyber-purple font-semibold">SECURITY NOTICE:</span><br>
+                            Unauthorized access attempts are logged and monitored.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Animated background elements -->
+        <div class="absolute top-20 left-10 w-32 h-32 bg-cyber-cyan/10 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-20 right-10 w-48 h-48 bg-cyber-purple/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+        <div class="absolute top-1/2 left-1/4 w-24 h-24 bg-cyber-teal/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+    </section>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+
+        // Neon Toast System
+        function showNeonToast(message, type = 'info') {
+            const container = document.getElementById('neon-toast-container');
+            const toast = document.createElement('div');
+            
+            const styles = {
+                success: {
+                    bg: 'bg-green-900/40',
+                    border: 'border-cyber-cyan',
+                    text: 'text-cyber-cyan',
+                    glow: 'shadow-cyber-cyan/50'
+                },
+                error: {
+                    bg: 'bg-red-900/40',
+                    border: 'border-cyber-magenta',
+                    text: 'text-cyber-magenta',
+                    glow: 'shadow-cyber-magenta/50'
+                },
+                info: {
+                    bg: 'bg-blue-900/40',
+                    border: 'border-cyber-teal',
+                    text: 'text-cyber-teal',
+                    glow: 'shadow-cyber-teal/50'
+                }
+            };
+            
+            const style = styles[type] || styles.info;
+            
+            toast.className = 'neon-toast px-6 py-4 rounded-lg backdrop-blur-xl border-2 ' + style.bg + ' ' + style.border + ' ' + style.text + ' ' + style.glow + ' shadow-2xl transform translate-x-full transition-all duration-500 relative overflow-hidden';
+            toast.innerHTML = '<div class="flex items-center space-x-3"><div class="flex-shrink-0">' + (type === 'success' ? '✓' : type === 'error' ? '✗' : '⚡') + '</div><div class="flex-1"><p class="font-cyber text-sm font-semibold">' + message + '</p></div><button onclick="this.parentElement.parentElement.remove()" class="flex-shrink-0 ml-4 text-current/70 hover:text-current">✕</button></div><div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-pulse"></div>';
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+                toast.classList.add('translate-x-0');
+                toast.style.animation = 'glitch 0.3s ease-in-out';
+            }, 100);
+            
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+
+        // Process Flask flash messages
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get flash messages from template
+            var flashMessages = [];
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        flashMessages.push({
+                            message: {{ message|tojson }},
+                            category: {{ category|tojson }}
+                        });
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            // Display all flash messages as toasts
+            flashMessages.forEach(function(flash) {
+                showNeonToast(flash.message, flash.category);
+            });
+            
+            // Auto-focus username field
+            document.querySelector('input[name="username"]').focus();
+        });
+    </script>
+</body>
+</html>

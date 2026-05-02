@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Command Center - NEXAweb</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.paypal.com/sdk/js?client-id=AQZm8D-mKYnirvx2gzSDhaSr1SaxTGvfs6g_2h9PMPJ8ja8J8l2vZKJ89tnqKQyFphE1GEggmAF591Mi&currency=USD"></script>    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'terminal-cyan': '#00ffff',
+                        'terminal-orange': '#ff8c00',
+                        'deep-black': '#000000',
+                        'terminal-green': '#00ff00',
+                        'terminal-red': '#ff0000'
+                    },
+                    fontFamily: {
+                        'terminal': ['Courier New', 'monospace'],
+                        'cyber': ['Orbitron', 'monospace']
+                    },
+                    keyframes: {
+                        'typewriter': {
+                            'from': { width: '0' },
+                            'to': { width: '100%' }
+                        },
+                        'blink': {
+                            '0%, 50%': { opacity: '1' },
+                            '51%, 100%': { opacity: '0' }
+                        },
+                        'spin': {
+                            'from': { transform: 'rotate(0deg)' },
+                            'to': { transform: 'rotate(360deg)' }
+                        },
+                        'pulse-glow': {
+                            '0%, 100%': { boxShadow: '0 0 5px currentColor' },
+                            '50%': { boxShadow: '0 0 20px currentColor, 0 0 30px currentColor' }
+                        },
+                        'scanline': {
+                            '0%': { transform: 'translateY(-100%)' },
+                            '100%': { transform: 'translateY(100%)' }
+                        },
+                        'matrix-rain': {
+                            '0%': { transform: 'translateY(-100%)' },
+                            '100%': { transform: 'translateY(100vh)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .terminal-text {
+            text-shadow: 0 0 5px currentColor;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .typewriter {
+            overflow: hidden;
+            white-space: nowrap;
+            animation: typewriter 3s steps(40) 1s 1 normal both;
+        }
+        
+        .typewriter::after {
+            content: '|';
+            animation: blink 1s infinite;
+        }
+        
+        .scanline {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #00ffff, transparent);
+            animation: scanline 8s linear infinite;
+        }
+        
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.1;
+            background-image: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 255, 0.03) 2px,
+                rgba(0, 255, 255, 0.03) 4px
+            );
+        }
+        
+        .status-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: bold;
+        }
+        
+        .status-active {
+            background: conic-gradient(from 0deg, #ff8c00, #ffff00, #ff8c00);
+            animation: spin 2s linear infinite;
+            color: #000;
+        }
+        
+        .status-complete {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        
+        .status-pending {
+            background: #333;
+            color: #666;
+            border: 2px solid #444;
+        }
+        
+        .terminal-log {
+            height: 200px;
+            overflow-y: auto;
+            background: #0a0a0a;
+            border: 1px solid #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 10px;
+        }
+        
+        .log-line {
+            margin: 2px 0;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        .terminal-border {
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5), inset 0 0 20px rgba(0, 255, 255, 0.1);
+        }
+        
+        .glow-text {
+            text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+        }
+        
+        /* Scrollbar styling */
+        .terminal-log::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .terminal-log::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        
+        .terminal-log::-webkit-scrollbar-thumb {
+            background: #00ffff;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-deep-black text-terminal-cyan terminal-text overflow-x-hidden">
+    <!-- Matrix Background -->
+    <div class="matrix-bg"></div>
+    
+    <!-- Scanline Effect -->
+    <div class="scanline"></div>
+
+    <!-- Command Center Header -->
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-black/90 border-b border-terminal-cyan/50 p-6">
+            <div class="container mx-auto">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-cyber glow-text text-terminal-cyan mb-2">
+                            [ COMMAND CENTER ]
+                        </h1>
+                        <div class="text-sm text-terminal-green">
+                            > SYSTEM STATUS: ONLINE
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-terminal-orange mb-1">SESSION ID</div>
+                        <div class="text-xl font-cyber glow-text text-terminal-cyan typewriter">
+                            {% if order %}{{ order.tracking_code }}{% else %}INVALID{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 container mx-auto p-6">
+            {% if order %}
+            <!-- Project Information -->
+            <div class="mb-8">
+                <div class="terminal-border rounded-lg p-6 bg-black/80">
+                    <h2 class="text-xl font-cyber text-terminal-cyan mb-4">
+                        > PROJECT ANALYSIS: {{ order.name | upper }}
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                            <span class="text-terminal-green">CLIENT:</span> {{ order.email }}
+                        </div>
+                        <div>
+                            <span class="text-terminal-green">TYPE:</span> 
+                            {% if order.project_type == 'ecommerce' %}E-COMMERCE PLATFORM
+                            {% elif order.project_type == 'landing' %}LANDING PAGE
+                            {% elif order.project_type == 'custom' %}CUSTOM APPLICATION
+                            {% else %}{{ order.project_type.upper() }}
+                            {% endif %}
+                        </div>
+                        <div>
+                            <span class="text-terminal-green">BUDGET:</span> ${{ order.budget.replace('-', ' - $') if '-' in order.budget else order.budget }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vertical Timeline -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-cyber text-terminal-cyan mb-6 glow-text">
+                    > DEPLOYMENT PIPELINE
+                </h2>
+                <div class="relative">
+                    <!-- Timeline Line -->
+                    <div class="absolute left-8 top-0 bottom-0 w-0.5 bg-terminal-cyan/30"></div>
+                    
+                    <!-- Timeline Items -->
+                    <div class="space-y-8">
+                        <!-- Analysis Phase -->
+                        <div class="flex items-center space-x-6">
+                            <div class="status-icon 
+                                {% if order.status == 'new' %}status-active
+                                {% elif order.status in ['analyzing', 'coding', 'testing', 'completed'] %}status-complete
+                                {% else %}status-pending{% endif %}">
+                                {% if order.status == 'new' %}
+                                    <div class="w-6 h-6 border-2 border-current border-t-transparent animate-spin"></div>
+                                {% elif order.status in ['analyzing', 'coding', 'testing', 'completed'] %}
+                                    ✓
+                                {% else %}
+                                    1
+                                {% endif %}
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-terminal-cyan font-bold">PHASE 1: ANALYSIS</div>
+                                <div class="text-sm text-terminal-green mt-1">
+                                    {% if order.status == 'new' %}
+                                        <span class="typewriter">Analyzing requirements and system architecture...</span>
+                                    {% elif order.status in ['analyzing', 'coding', 'testing', 'completed'] %}
+                                        ✓ Requirements analysis complete. Architecture designed.
+                                    {% else %}
+                                        ○ Pending analysis phase
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Architecture Phase -->
+                        <div class="flex items-center space-x-6">
+                            <div class="status-icon 
+                                {% if order.status == 'analyzing' %}status-active
+                                {% elif order.status in ['coding', 'testing', 'completed'] %}status-complete
+                                {% else %}status-pending{% endif %}">
+                                {% if order.status == 'analyzing' %}
+                                    <div class="w-6 h-6 border-2 border-current border-t-transparent animate-spin"></div>
+                                {% elif order.status in ['coding', 'testing', 'completed'] %}
+                                    ✓
+                                {% else %}
+                                    2
+                                {% endif %}
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-terminal-cyan font-bold">PHASE 2: ARCHITECTURE</div>
+                                <div class="text-sm text-terminal-green mt-1">
+                                    {% if order.status == 'analyzing' %}
+                                        <span class="typewriter">Building system architecture and database schema...</span>
+                                    {% elif order.status in ['coding', 'testing', 'completed'] %}
+                                        ✓ System architecture implemented.
+                                    {% else %}
+                                        ○ Pending architecture design
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Coding Phase -->
+                        <div class="flex items-center space-x-6">
+                            <div class="status-icon 
+                                {% if order.status == 'coding' %}status-active
+                                {% elif order.status in ['testing', 'completed'] %}status-complete
+                                {% else %}status-pending{% endif %}">
+                                {% if order.status == 'coding' %}
+                                    <div class="w-6 h-6 border-2 border-current border-t-transparent animate-spin"></div>
+                                {% elif order.status in ['testing', 'completed'] %}
+                                    ✓
+                                {% else %}
+                                    3
+                                {% endif %}
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-terminal-cyan font-bold">PHASE 3: CODING</div>
+                                <div class="text-sm text-terminal-green mt-1">
+                                    {% if order.status == 'coding' %}
+                                        <span class="typewriter">Developing core functionality and features...</span>
+                                    {% elif order.status in ['testing', 'completed'] %}
+                                        ✓ Code development complete.
+                                    {% else %}
+                                        ○ Pending development phase
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Security Audit Phase -->
+                        <div class="flex items-center space-x-6">
+                            <div class="status-icon 
+                                {% if order.status == 'testing' %}status-active
+                                {% elif order.status == 'completed' %}status-complete
+                                {% else %}status-pending{% endif %}">
+                                {% if order.status == 'testing' %}
+                                    <div class="w-6 h-6 border-2 border-current border-t-transparent animate-spin"></div>
+                                {% elif order.status == 'completed' %}
+                                    ✓
+                                {% else %}
+                                    4
+                                {% endif %}
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-terminal-cyan font-bold">PHASE 4: SECURITY AUDIT</div>
+                                <div class="text-sm text-terminal-green mt-1">
+                                    {% if order.status == 'testing' %}
+                                        <span class="typewriter">Running security scans and penetration tests...</span>
+                                    {% elif order.status == 'completed' %}
+                                        ✓ Security audit passed. All vulnerabilities patched.
+                                    {% else %}
+                                        ○ Pending security assessment
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Final Launch Phase -->
+                        <div class="flex items-center space-x-6">
+                            <div class="status-icon 
+                                {% if order.status == 'completed' %}status-complete
+                                {% else %}status-pending{% endif %}">
+                                {% if order.status == 'completed' %}
+                                    ✓
+                                {% else %}
+                                    5
+                                {% endif %}
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-terminal-cyan font-bold">PHASE 5: FINAL LAUNCH</div>
+                                <div class="text-sm text-terminal-green mt-1">
+                                    {% if order.status == 'completed' %}
+                                        ✓ Project deployed successfully. Ready for production.
+                                    {% else %}
+                                        ○ Pending final deployment
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Success Card for Completed Orders -->
+                        {% if order.status == 'completed' %}
+                        <div class="mt-8">
+                            <div class="terminal-border rounded-lg p-6 bg-gradient-to-br from-green-500/20 to-green-600/30 border-2 border-green-400/50 shadow-lg shadow-green-400/20" data-aos="fade-up">
+                                <div class="text-center">
+                                    <div class="text-4xl font-cyber text-white mb-4">
+                                        🎉
+                                    </div>
+                                    <h3 class="text-2xl font-cyber text-white mb-4">
+                                        PROJECT COMPLETED SUCCESSFULLY!
+                                    </h3>
+                                    <p class="text-green-300 mb-6">
+                                        Your {{ order.project_type|title }} project has been completed and is ready for delivery.
+                                    </p>
+                                    
+                                    <!-- Feedback Button -->
+                                    <div class="flex justify-center space-x-4 mb-6">
+                                        <a href="/feedback/{{ order.tracking_code }}" 
+                                           class="px-8 py-3 bg-gradient-to-r from-cyber-cyan to-cyber-teal text-black font-bold rounded-lg border border-cyber-cyan/30 hover:shadow-lg hover:shadow-cyber-cyan/50 transform hover:scale-105 transition-all duration-300">
+                                            <span class="flex items-center">
+                                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M4 12h.01M4 12H8c0-3.586 0-8-8-8V8c0-3.586 0-8-8-8h56c0 3.586 0 8 8v56c3.586 0 8 8-8 8h56c0 3.586 0 8-8v56c3.586 0 8 8-8z"></path>
+                                                </svg>
+                                                Leave a Review
+                                            </span>
+                                        </a>
+                                        
+                                        <div class="text-sm text-green-300">
+                                            Click to share your experience with our team
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Review Request -->
+                                    <div class="text-left text-green-300">
+                                        <div class="flex items-center mb-2">
+                                            <svg class="w-4 h-4 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v14a2 2 0 00-2 2H4a2 2 0 00-2 2v6a2 2 0 00-2 2z"></path>
+                                            </svg>
+                                            <span class="text-green-400 font-semibold">We Value Your Feedback</span>
+                                        </div>
+                                        <p class="text-xs">
+                                            Your experience helps us improve our services and assists other clients in making informed decisions.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Log -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-cyber text-terminal-cyan mb-4 glow-text">
+                    > SYSTEM LOG
+                </h2>
+                <div class="terminal-border rounded-lg p-4 bg-black/80">
+                    <div class="terminal-log" id="systemLog">
+                        <div class="log-line text-terminal-green">
+                            [{{ order.created_at.strftime('%Y-%m-%d %H:%M:%S') if order.created_at else 'SYSTEM' }}] > Project {{ order.tracking_code }} initialized
+                        </div>
+                        <div class="log-line text-terminal-cyan">
+                            [SYSTEM] > Connecting to build server...
+                        </div>
+                        <div class="log-line text-terminal-green">
+                            [SYSTEM] > Connection established
+                        </div>
+                        {% if order.status == 'new' %}
+                        <div class="log-line text-terminal-orange">
+                            [BUILD] > Analyzing requirements...
+                        </div>
+                        {% elif order.status == 'analyzing' %}
+                        <div class="log-line text-terminal-green">
+                            [BUILD] > Requirements analysis complete
+                        </div>
+                        <div class="log-line text-terminal-orange">
+                            [BUILD] > Designing system architecture...
+                        </div>
+                        {% elif order.status == 'coding' %}
+                        <div class="log-line text-terminal-green">
+                            [BUILD] > Architecture design complete
+                        </div>
+                        <div class="log-line text-terminal-green">
+                            [BUILD] > Starting development phase...
+                        </div>
+                        <div class="log-line text-terminal-orange">
+                            [BUILD] > Compiling source code...
+                        </div>
+                        {% elif order.status == 'testing' %}
+                        <div class="log-line text-terminal-green">
+                            [BUILD] > Development complete
+                        </div>
+                        <div class="log-line text-terminal-orange">
+                            [SECURITY] > Running vulnerability scans...
+                        </div>
+                        <div class="log-line text-terminal-green">
+                            [SECURITY] > No critical vulnerabilities found
+                        </div>
+                        {% elif order.status == 'completed' %}
+                        <div class="log-line text-terminal-green">
+                            [BUILD] > Development complete
+                        </div>
+                        <div class="log-line text-terminal-green">
+                            [SECURITY] > Security audit passed
+                        </div>
+                        <div class="log-line text-terminal-green">
+                            [DEPLOY] > Project deployed successfully
+                        </div>
+                        <div class="log-line text-terminal-cyan">
+                            [SYSTEM] > Build process completed in {{ order.created_at.strftime('%H:%M:%S') if order.created_at else '00:00:00' }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Section -->
+            <div class="mb-8">
+                <h2 class="text-xl font-cyber text-terminal-cyan mb-4">
+                    > PAYMENT STATUS
+                </h2>
+                <div class="terminal-border rounded-lg p-6 bg-black/80">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="text-center">
+                            <div class="text-sm text-terminal-green mb-1">TOTAL PRICE</div>
+                            <div class="text-2xl font-cyber text-terminal-cyan">${{ "%.2f"|format(order.total_price or 0.0) }}</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-sm text-terminal-green mb-1">DEPOSIT AMOUNT</div>
+                            <div class="text-2xl font-cyber text-terminal-cyan">${{ "%.2f"|format(order.deposit_amount or 0.0) }}</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-sm text-terminal-green mb-1">REMAINING BALANCE</div>
+                            <div class="text-2xl font-cyber text-terminal-orange">${{ "%.2f"|format(order.remaining_amount) }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Dynamic Payment and Status Display -->
+                    {% if order.status == 'new' %}
+                        <!-- New Status: Show Deposit Payment Required -->
+                        {% if order.deposit_amount > 0 and order.is_deposit_paid == False %}
+                        <div class="mb-6">
+                            <div class="terminal-border rounded-lg p-4 bg-black/60 mb-4">
+                                <div class="text-terminal-orange font-cyber text-center mb-2">
+                                   Pay the deposit first so that the project can begin.
+                                </div>
+                            </div>
+                            <div id="payment-method-selector" class="terminal-border rounded-lg p-4 bg-black/60 cursor-pointer hover:bg-black/80 transition-all duration-300 text-center mx-auto w-fit" onclick="openPaymentModal()">
+                                <div class="text-terminal-cyan font-cyber text-lg whitespace-nowrap">
+                                    > SELECT PAYMENT METHOD
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% elif order.status in ['analyzing', 'coding', 'testing'] %}
+                        <!-- Work in Progress: Show Working Indicator -->
+                        <div class="mb-6">
+                            <div class="terminal-border rounded-lg p-6 bg-black/60 text-center">
+                                <div class="flex justify-center mb-4">
+                                    <div class="w-12 h-12 border-4 border-terminal-green border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                                <div class="text-terminal-green font-cyber">
+                                    {% if order.status == 'analyzing' %}
+                                       Your project requirements will be analyzed
+                                    {% elif order.status == 'coding' %}
+                                       Your project will be programmed
+                                    {% elif order.status == 'testing' %}
+                                       Your project will be tested
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% elif order.status == 'completed' %}
+                        <!-- Completed Status: Show Final Payment Request -->
+                        {% if order.is_full_paid == False %}
+                        <div class="mb-6">
+                            <div class="terminal-border rounded-lg p-4 bg-black/60 mb-4">
+                                <div class="text-terminal-green font-cyber text-center">
+                                   The project is complete. You must complete the payment of the remaining agreed amount in order for the project and files to be delivered to you.
+                                </div>
+                            </div>
+                            <div id="payment-method-selector" class="terminal-border rounded-lg p-4 bg-black/60 cursor-pointer hover:bg-black/80 transition-all duration-300 text-center mx-auto w-fit" onclick="openFinalPaymentModal()">
+                                <div class="text-terminal-cyan font-cyber text-lg whitespace-nowrap">
+                                    > SELECT PAYMENT METHOD
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <!-- Payment Modal Overlay -->
+                    <div id="payment-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+                        <div class="terminal-border rounded-lg p-8 bg-black/90 max-w-md mx-4">
+                            <div class="text-terminal-cyan font-cyber text-xl mb-6 text-center">
+                                > CHOOSE PAYMENT METHOD
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 mb-6">
+                                <!-- Zain Cash Option -->
+                                <div class="terminal-border rounded-lg p-6 bg-black/60 hover:bg-black/80 transition-all duration-300 cursor-pointer text-center" onclick="selectPaymentMethod('zaincash')">
+                                    <div class="w-12 h-12 bg-terminal-orange rounded-full flex items-center justify-center text-black font-bold text-xl mx-auto mb-3">
+                                        Z
+                                    </div>
+                                    <div class="text-terminal-green font-cyber text-sm">
+                                        ZAIN CASH
+                                    </div>
+                                    <div class="text-terminal-cyan text-xs mt-1">
+                                        Mobile Payment
+                                    </div>
+                                </div>
+                                
+                                <!-- PayPal Option -->
+                                <div class="terminal-border rounded-lg p-6 bg-black/60 hover:bg-black/80 transition-all duration-300 cursor-pointer text-center" onclick="selectPaymentMethod('paypal')">
+                                    <div class="w-12 h-12 bg-terminal-blue rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-3">
+                                        P
+                                    </div>
+                                    <div class="text-terminal-green font-cyber text-sm">
+                                        PAYPAL
+                                    </div>
+                                    <div class="text-terminal-cyan text-xs mt-1">
+                                        Online Payment
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Cancel Button -->
+                            <div class="text-center">
+                                <button onclick="closePaymentModal()" class="terminal-border rounded px-6 py-2 text-terminal-cyan hover:bg-terminal-cyan/10 transition-all duration-300">
+                                    > CANCEL
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Zain Cash Payment Modal -->
+                    <div id="zaincash-payment-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+                        <div class="terminal-border rounded-lg p-8 bg-black/90 max-w-md mx-4">
+                            <div class="text-terminal-cyan font-cyber text-xl mb-6 text-center">
+                                > ZAIN CASH PAYMENT
+                            </div>
+                            
+                            <!-- Payment Instructions -->
+                            <div class="mb-6">
+                                <div class="text-terminal-green text-sm mb-3">
+                                    Send payment to this Zain Cash number:
+                                </div>
+                                <div class="terminal-border rounded-lg p-4 bg-black/60 text-center">
+                                    <div class="text-terminal-orange text-2xl font-cyber">
+                                        0778138272
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Upload Receipt -->
+                            <div class="mb-6">
+                                <div class="text-terminal-green text-sm mb-3">
+                                    Upload payment receipt:
+                                </div>
+                                <div class="terminal-border rounded-lg p-4 bg-black/60">
+                                    <input type="file" 
+                                           id="zaincash-receipt" 
+                                           accept="image/*" 
+                                           class="w-full text-terminal-cyan bg-transparent border-none outline-none file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-cyber file:bg-terminal-orange/20 file:text-terminal-orange hover:file:bg-terminal-orange/30 cursor-pointer">
+                                    <div id="receipt-filename" class="text-terminal-cyan text-xs mt-2">
+                                        No file selected
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <button onclick="closeZainCashModal()" class="terminal-border rounded px-4 py-2 text-terminal-cyan hover:bg-terminal-cyan/10 transition-all duration-300">
+                                    > CANCEL
+                                </button>
+                                <button onclick="confirmZainCashPayment()" class="terminal-border rounded px-4 py-2 text-terminal-green hover:bg-terminal-green/10 transition-all duration-300">
+                                    > CONFIRM PAYMENT
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- PayPal Payment Modal -->
+                    <div id="paypal-payment-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+                        <div class="terminal-border rounded-lg p-8 bg-black/90 max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+                            <div class="text-terminal-cyan font-cyber text-xl mb-6 text-center">
+                                > PAYPAL PAYMENT
+                            </div>
+                            
+                            <!-- Payment Instructions -->
+                            <div class="text-terminal-green text-sm mb-3">
+                                Choose your payment method:
+                            </div>
+                            
+                            <!-- Two Column Layout for PayPal Options -->
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                                <!-- PayPal Smart Payment Buttons - Primary Payment Method -->
+                                <div class="terminal-border rounded-lg p-6 bg-black/60">
+                                    <div id="paypal-button-container" class="mb-3"></div>
+                                    <div class="text-terminal-cyan text-xs text-center">
+                                        Automatic confirmation • No receipt needed
+                                    </div>
+                                </div>
+                                
+                                <!-- PayPal.me Link Option with Receipt Upload -->
+                                <div class="terminal-border rounded-lg p-6 bg-black/60">
+                                    <div class="text-terminal-blue text-sm font-cyber mb-3">PayPal.me Link:</div>
+                                    <a href="https://paypal.me/aymanalamawi18" 
+                                       target="_blank" 
+                                       class="text-terminal-cyan text-lg font-cyber hover:text-terminal-green transition-colors duration-300 block text-center mb-4">
+                                        paypal.me/aymanalamawi18
+                                    </a>
+                                    <div class="text-terminal-cyan text-xs text-center mb-4">
+                                        Opens in new window →
+                                    </div>
+                                    
+                                    <!-- Receipt Upload for PayPal.me -->
+                                    <div class="mt-4">
+                                        <div class="text-terminal-green text-xs mb-2">
+                                            Upload payment receipt <span class="text-terminal-red">*</span> (Required):
+                                        </div>
+                                        <input type="file" 
+                                               id="paypal-me-receipt" 
+                                               accept="image/*" 
+                                               required
+                                               class="w-full text-terminal-cyan bg-transparent border-none outline-none file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-cyber file:bg-terminal-blue/20 file:text-terminal-blue hover:file:bg-terminal-blue/30 cursor-pointer">
+                                        <div id="paypal-me-receipt-filename" class="text-terminal-cyan text-xs mt-2">
+                                            No file selected
+                                        </div>
+                                        <div class="text-terminal-orange text-xs mt-2">
+                                            ⚠ Receipt required for confirmation
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- PayPal.me Confirmation Button -->
+                                    <div class="mt-4">
+                                        <button onclick="confirmPayPalMePayment()" class="w-full terminal-border rounded px-3 py-2 text-terminal-green hover:bg-terminal-green/10 transition-all duration-300 text-sm">
+                                            > I'VE PAID VIA PAYPAL.ME
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Payment Amount -->
+                            <div class="mb-6">
+                                <div class="text-terminal-green text-sm mb-2">
+                                    Amount to pay:
+                                </div>
+                                <div class="terminal-border rounded-lg p-3 bg-black/60 text-center">
+                                    <div class="text-terminal-orange text-xl font-cyber">
+                                        ${{ "%.2f"|format(order.deposit_amount if order.deposit_amount else 0.0) }}
+                                    </div>
+                                    <div class="text-terminal-cyan text-xs mt-1">
+                                        Deposit Amount
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="grid grid-cols-1 gap-4">
+                                <button onclick="closePaypalModal()" class="terminal-border rounded px-4 py-2 text-terminal-cyan hover:bg-terminal-cyan/10 transition-all duration-300">
+                                    > CANCEL
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Logic - Three Stages -->
+                    {% if order.deposit_amount > 0 and order.is_deposit_paid == False %}
+                    <!-- Stage 1: Deposit Required -->
+                    <div class="text-center" id="payment-section">
+                        <div class="mb-4">
+                            <div class="text-terminal-orange text-lg font-cyber mb-2">
+                                > STAGE 1: DEPOSIT PAYMENT REQUIRED
+                            </div>
+                            <div class="text-terminal-green text-sm mb-2">
+                                Pay ${{ "%.2f"|format(order.deposit_amount or 0.0) }} to start your project
+                            </div>
+                            <div class="text-terminal-cyan text-xs glow-text">
+                                Status: Awaiting Deposit
+                            </div>
+                            <div class="text-terminal-yellow text-xs mt-2">
+                                Test Notification: Stage 1 - Deposit Button Active
+                            </div>
+                        </div>
+                        <div id="paypal-button-container" class="mb-4"></div>
+                        <div id="processing-overlay" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                            <div class="bg-white rounded-lg p-6 max-w-sm mx-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                                    <div class="text-gray-700">Processing payment...</div>
+                                </div>
+                            </div>
+                        </div>
+                        <script>
+                            console.log('STAGE 1: Deposit Required - Initializing PayPal button');
+                            console.log('Deposit Amount:', {{ "%.2f"|format(order.deposit_amount or 0.0) }});
+                            
+                            paypal.Buttons({
+                                createOrder: function(data, actions) {
+                                    console.log('STAGE 1: Creating PayPal deposit order...');
+                                    return actions.order.create({
+                                        purchase_units: [{
+                                            amount: {
+                                                value: '{{ "%.2f"|format(order.deposit_amount or 0.0) }}'
+                                            }
+                                        }]
+                                    });
+                                },
+                                onApprove: function(data, actions) {
+                                    console.log('STAGE 1: Deposit payment approved, sending to backend...');
+                                    console.log('PayPal Order ID:', data.orderID);
+                                    
+                                    // Show processing overlay
+                                    document.getElementById('processing-overlay').classList.remove('hidden');
+                                    
+                                    // Send payment details to backend immediately (bypass PayPal capture)
+                                    fetch('/api/capture-payment', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                        },
+                                        body: JSON.stringify({
+                                            order_id: {{ orderid }},
+                                            tracking_id: '{{ order.tracking_code }}',
+                                            payment_type: 'deposit',
+                                            paypal_order_id: data.orderID
+                                        })
+                                    })
+                                    .then(response => response.json())
+                                    .then(result => {
+                                        console.log('STAGE 1: Backend response:', result);
+                                        // Hide processing overlay
+                                        document.getElementById('processing-overlay').classList.add('hidden');
+                                        
+                                        if (result.success) {
+                                            console.log('STAGE 1: Payment successful - immediate reload');
+                                                
+                                            // Flash refresh immediately
+                                            window.location.reload();
+                                        } else {
+                                            console.error('STAGE 1: Payment processing failed:', result);
+                                            alert('Payment processing failed. Please contact support.');
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('STAGE 1: Network error:', error);
+                                        console.error('Error details:', error.message);
+                                        // Hide processing overlay
+                                        document.getElementById('processing-overlay').classList.add('hidden');
+                                        alert('Network error. Please try again. Check console for details.');
+                                    });
+                                }
+                            }).render('#paypal-button-container');
+                            
+                            console.log('STAGE 1: PayPal button rendered successfully');
+                        </script>
+                    </div>
+                    
+                    {% elif order.is_deposit_paid and order.status == 'In Progress' %}
+                    <!-- Stage 2: Work in Progress -->
+                    <div class="text-center">
+                        <div class="mb-4">
+                            <div class="text-terminal-green text-lg font-cyber mb-2">
+                                > STAGE 2: WORK IN PROGRESS
+                            </div>
+                            <div class="text-terminal-cyan text-sm mb-2">
+                                Work is underway
+                            </div>
+                            <div class="text-terminal-green text-xs mb-2">
+                                Deposit Paid (${{ "%.2f"|format(order.deposit_amount or 0.0) }}). 
+                                Remaining Balance (${{ "%.2f"|format(order.remaining_amount) }}) due upon completion.
+                            </div>
+                            <div class="text-terminal-yellow text-xs mt-2">
+                                Test Notification: Stage 2 - Work Underway (No Payment Buttons)
+                            </div>
+                        </div>
+                        <div class="inline-block px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-lg">
+                            <div class="text-blue-400 font-cyber">
+                                <svg class="w-6 h-6 mx-auto mb-2 animate-spin" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+                                </svg>
+                                Work is Underway
+                            </div>
+                        </div>
+                        <script>
+                            console.log('STAGE 2: Work in Progress - No payment buttons available');
+                            console.log('Deposit Amount:', {{ "%.2f"|format(order.deposit_amount or 0.0) }});
+                            console.log('Remaining Amount:', {{ "%.2f"|format(order.remaining_amount) }});
+                            console.log('Status:', '{{ order.status }}');
+                        </script>
+                    </div>
+                    
+                    {% elif order.status == 'completed' and not order.is_full_paid %}
+                    <!-- Stage 3: Final Payment Required -->
+                    <div class="text-center">
+                        <div class="mb-4">
+                            <div class="text-terminal-cyan text-lg font-cyber mb-2">
+                                > STAGE 3: FINAL PAYMENT REQUIRED
+                            </div>
+                            <div class="text-terminal-green text-sm mb-2">
+                                Pay ${{ "%.2f"|format(order.remaining_amount) }} to unlock your project
+                            </div>
+                            <div class="text-terminal-orange text-xs glow-text">
+                                Status: Ready for Final Payment
+                            </div>
+                            <div class="text-terminal-yellow text-xs mt-2">
+                                Test Notification: Stage 3 - Final Payment Button Active
+                            </div>
+                        </div>
+                        <div id="paypal-button-container-final" class="mb-4"></div>
+                        <div id="processing-overlay-final" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                            <div class="bg-white rounded-lg p-6 max-w-sm mx-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                                    <div class="text-gray-700">Processing payment...</div>
+                                </div>
+                            </div>
+                        </div>
+                        <script>
+                            console.log('STAGE 3: Final Payment Required - Initializing PayPal button');
+                            console.log('Remaining Amount:', {{ "%.2f"|format(order.remaining_amount) }});
+                            console.log('Order Status:', '{{ order.status }}');
+                            
+                            paypal.Buttons({
+                                createOrder: function(data, actions) {
+                                    console.log('STAGE 3: Creating PayPal final payment order...');
+                                    return actions.order.create({
+                                        purchase_units: [{
+                                            amount: {
+                                                value: '{{ "%.2f"|format(order.remaining_amount) }}'
+                                            }
+                                        }]
+                                    });
+                                },
+                                onApprove: function(data, actions) {
+                                    console.log('STAGE 3: Final payment approved, sending to backend...');
+                                    console.log('PayPal Order ID:', data.orderID);
+                                    
+                                    // Show processing overlay
+                                    document.getElementById('processing-overlay-final').classList.remove('hidden');
+                                    
+                                    // Send payment details to backend immediately (bypass PayPal capture)
+                                    fetch('/api/capture-payment', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                        },
+                                        body: JSON.stringify({
+                                            order_id: {{ order.id }},
+                                            tracking_id: '{{ order.tracking_code }}',
+                                            payment_type: 'final',
+                                            paypal_order_id: data.orderID
+                                        })
+                                    })
+                                    .then(response => response.json())
+                                    .then(result => {
+                                        console.log('STAGE 3: Backend response:', result);
+                                        // Hide processing overlay
+                                        document.getElementById('processing-overlay-final').classList.add('hidden');
+                                        
+                                        if (result.success) {
+                                            console.log('STAGE 3: Payment successful - immediate reload');
+                                                
+                                                // Flash refresh immediately
+                                                window.location.reload();
+                                            } else {
+                                                console.error('STAGE 3: Payment processing failed:', result);
+                                                alert('Payment processing failed. Please contact support.');
+                                            }
+                                    })
+                                    .catch(error => {
+                                        console.error('STAGE 3: Network error:', error);
+                                        console.error('Error details:', error.message);
+                                        // Hide processing overlay
+                                        document.getElementById('processing-overlay-final').classList.add('hidden');
+                                        alert('Network error. Please try again. Check console for details.');
+                                    });
+                                }
+                            }).render('#paypal-button-container-final');
+                            
+                            console.log('STAGE 3: PayPal final payment button rendered successfully');
+                        </script>
+                    </div>
+                    
+                    {% elif order.is_full_paid %}
+                    <!-- Fully Paid -->
+                    <div class="text-center">
+                        <div class="mb-4">
+                            <div class="text-terminal-green text-lg font-cyber mb-2">
+                                > PAYMENT COMPLETED
+                            </div>
+                            <div class="text-terminal-cyan text-sm">
+                                Thank you! Your project is fully paid and ready.
+                            </div>
+                        </div>
+                        <div class="inline-block px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-lg">
+                            <div class="text-blue-400 font-cyber">
+                                <svg class="w-6 h-6 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                Fully Paid - Project Unlocked
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% else %}
+                    <!-- No Payment Required -->
+                    <div class="text-center">
+                        <div class="text-terminal-green text-sm">
+                            No payment required at this time.
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+       
+            {% else %}
+            <!-- Order Not Found -->
+            <div class="text-center">
+                <div class="terminal-border rounded-lg p-12 bg-black/80">
+                    <div class="text-6xl text-terminal-red mb-6">[ERROR 404]</div>
+                    <h1 class="text-3xl font-cyber text-terminal-red mb-4">
+                        TRACKING CODE NOT FOUND
+                    </h1>
+                    <p class="text-terminal-cyan mb-8">The specified tracking code does not exist in our system.</p>
+                    <a href="{{ url_for('main.home') }}" class="inline-block px-6 py-3 terminal-border text-terminal-cyan hover:bg-terminal-cyan/10 transition-all duration-300">
+                        > RETURN TO HOME
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-black/90 border-t border-terminal-cyan/50 p-4">
+            <div class="container mx-auto text-center">
+                <div class="text-sm text-terminal-green">
+                    > SYSTEM STATUS: OPERATIONAL | LAST UPDATE: {{ current_time }}
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Initialize PayPal Smart Buttons when modal opens
+        function initPayPalSmartButtons() {
+            if (window.paypalSmartButtonsInitialized) return;
+            
+            paypal.Buttons({
+                // Configure buttons with vertical layout and blue color to match site design
+                style: {
+                    layout: 'vertical',
+                    color: 'blue',
+                    shape: 'rect',
+                    label: 'paypal',
+                    height: 40
+                },
+                
+                // Create order with deposit amount
+                createOrder: function(data, actions) {
+                    console.log('PayPal Smart: Creating order for ${{ "%.2f"|format(order.deposit_amount or 0.0) }}');
+                    return actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                value: '{{ "%.2f"|format(order.deposit_amount or 0.0) }}',
+                                currency_code: 'USD'
+                            }
+                        }]
+                    });
+                },
+                
+                // Handle successful payment
+                onApprove: function(data, actions) {
+                    console.log('PayPal Smart: Payment approved', data);
+                    
+                    // Show processing message
+                    const container = document.getElementById('paypal-button-container');
+                    container.innerHTML = '<div class="text-terminal-green text-center p-3">Processing payment...</div>';
+                    
+                    // Capture payment and update order
+                    return actions.order.capture().then(function(details) {
+                        console.log('PayPal Smart: Payment captured', details);
+                        
+                        // Update order status via API (automatic confirmation for smart buttons)
+                        const paymentData = {
+                            order_id: '{{ order.id }}',
+                            tracking_code: '{{ order.tracking_code }}',
+                            payment_type: 'deposit'
+                        };
+                        
+                        console.log('PayPal Smart: Sending payment data:', paymentData);
+                        
+                        fetch('/api/paypal-payment', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify(paymentData)
+                        })
+                        .then(response => {
+                            console.log('PayPal Smart: Response status:', response.status);
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(result => {
+                            console.log('PayPal Smart: Response result:', result);
+                            if (result.success) {
+                                container.innerHTML = '<div class="text-terminal-green text-center p-3">✅ Payment Successful!</div>';
+                                showPayPalSuccessAlert('deposit');
+                                closePaypalModal();
+                                closePaymentModal();
+                            } else {
+                                container.innerHTML = '<div class="text-terminal-red text-center p-3">❌ Payment Failed</div>';
+                                console.error('PayPal Smart payment failed:', result);
+                                
+                                // Show detailed error to user
+                                alert('Payment confirmation failed: ' + (result.message || 'Unknown error'));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('PayPal Smart payment error:', error);
+                            container.innerHTML = '<div class="text-terminal-red text-center p-3">❌ Payment Error</div>';
+                            
+                            // Show detailed error to user
+                            alert('Network error: ' + error.message + '. Please try again or contact support.');
+                        });
+                    });
+                },
+                
+                // Handle errors
+                onError: function(err) {
+                    console.error('PayPal Smart button error:', err);
+                    const container = document.getElementById('paypal-button-container');
+                    container.innerHTML = '<div class="text-terminal-red text-center p-3">❌ PayPal Error</div>';
+                },
+                
+                // Handle cancellation
+                onCancel: function(data) {
+                    console.log('PayPal Smart payment cancelled', data);
+                    const container = document.getElementById('paypal-button-container');
+                    container.innerHTML = '<div class="text-terminal-orange text-center p-3">Payment Cancelled</div>';
+                    setTimeout(() => {
+                        // Re-render buttons
+                        initPayPalSmartButtons();
+                    }, 2000);
+                }
+            }).render('#paypal-button-container');
+            
+            window.paypalSmartButtonsInitialized = true;
+        }
+        
+        // Initialize buttons when modal opens
+        const originalOpenPaypalModal = window.openPaypalModal;
+        window.openPaypalModal = function() {
+            originalOpenPaypalModal();
+            setTimeout(() => {
+                initPayPalSmartButtons();
+            }, 500);
+        };
+        
+        // Simulate real-time log updates
+        function addLogEntry(message, type) {
+            type = type || 'terminal-green';
+            const log = document.getElementById('systemLog');
+            if (log) {
+                const timestamp = new Date().toLocaleString();
+                const entry = document.createElement('div');
+                entry.className = 'log-line text-' + type;
+                entry.innerHTML = '[' + timestamp + '] > ' + message;
+                log.appendChild(entry);
+                log.scrollTop = log.scrollHeight;
+            }
+        }
+
+        // Add periodic log entries for active builds
+        {% if order and order.status in ['new', 'analyzing', 'coding', 'testing'] %}
+        var currentStatus = '{{ order.status }}';
+        setInterval(function() {
+            var messages = {
+                'new': ['Processing requirements...', 'Validating specifications...', 'Preparing analysis...'],
+                'analyzing': ['Designing database schema...', 'Creating API endpoints...', 'Setting up architecture...'],
+                'coding': ['Compiling modules...', 'Running unit tests...', 'Optimizing performance...'],
+                'testing': ['Scanning for vulnerabilities...', 'Running integration tests...', 'Validating security protocols...']
+            };
+            
+            var statusMessages = messages[currentStatus] || [];
+            if (statusMessages.length > 0) {
+                var randomMessage = statusMessages[Math.floor(Math.random() * statusMessages.length)];
+                addLogEntry(randomMessage, 'terminal-orange');
+            }
+        }, 3000);
+        {% endif %}
+
+        // Payment Method Selection Functions
+        function openPaymentModal() {
+            const modal = document.getElementById('payment-modal');
+            modal.classList.remove('hidden');
+        }
+
+        function closePaymentModal() {
+            const modal = document.getElementById('payment-modal');
+            modal.classList.add('hidden');
+        }
+
+        function selectPaymentMethod(method) {
+            console.log('Selected payment method:', method);
+            
+            // Add visual feedback
+            const selector = document.getElementById('payment-method-selector');
+            
+            if (method === 'zaincash') {
+                selector.innerHTML = `
+                    <div class="text-terminal-green font-cyber text-lg">
+                        > SELECTED: ZAIN CASH
+                    </div>
+                `;
+                // Open Zain Cash payment modal
+                openZainCashModal();
+                return; // Don't close the main modal yet
+            } else if (method === 'paypal') {
+                selector.innerHTML = `
+                    <div class="text-terminal-green font-cyber text-lg">
+                        > SELECTED: PAYPAL
+                    </div>
+                `;
+                // Open PayPal payment modal
+                openPaypalModal();
+                return; // Don't close the main modal yet
+            }
+            
+            // Close modal after selection (shouldn't reach here)
+            closePaymentModal();
+            
+            // Remove click handler since selection is made
+            selector.onclick = null;
+            selector.classList.remove('cursor-pointer', 'hover:bg-black/80');
+        }
+
+        function openFinalPaymentModal() {
+            // Set payment type to final for Zain Cash modal
+            window.currentPaymentType = 'final';
+            openPaymentModal();
+        }
+
+        function openZainCashModal() {
+            const modal = document.getElementById('zaincash-payment-modal');
+            modal.classList.remove('hidden');
+        }
+
+        function closeZainCashModal() {
+            const modal = document.getElementById('zaincash-payment-modal');
+            modal.classList.add('hidden');
+            // Reset file input
+            document.getElementById('zaincash-receipt').value = '';
+            document.getElementById('receipt-filename').textContent = 'No file selected';
+        }
+
+        function openPaypalModal() {
+            const modal = document.getElementById('paypal-payment-modal');
+            modal.classList.remove('hidden');
+        }
+
+        function closePaypalModal() {
+            const modal = document.getElementById('paypal-payment-modal');
+            modal.classList.add('hidden');
+        }
+
+        function confirmPaypalPayment() {
+            // Determine payment type
+            const paymentType = window.currentPaymentType || 'deposit';
+            
+            // Check if there's a file to upload (mandatory for PayPal)
+            const fileInput = document.getElementById('paypal-receipt');
+            const hasFile = fileInput.files && fileInput.files.length > 0;
+            
+            if (!hasFile) {
+                alert('Payment receipt is required for PayPal payment confirmation. Please upload your payment receipt.');
+                return;
+            }
+            
+            // Show processing message
+            const confirmBtn = event.target;
+            confirmBtn.textContent = '> PROCESSING...';
+            confirmBtn.disabled = true;
+            
+            // Handle file upload (mandatory)
+            const formData = new FormData();
+            formData.append('order_id', '{{ order.id }}');
+            formData.append('tracking_code', '{{ order.tracking_code }}');
+            formData.append('payment_type', paymentType);
+            formData.append('receipt', fileInput.files[0]);
+            
+            // Send PayPal payment with receipt to backend
+            fetch('/api/paypal-payment', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                handlePaypalResponse(result, confirmBtn, paymentType);
+            })
+            .catch(error => {
+                console.error('Network error:', error);
+                alert('Network error. Please try again.');
+                resetPaypalButton(confirmBtn);
+            });
+        }
+
+        function handlePaypalResponse(result, confirmBtn, paymentType) {
+            // Reset button
+            resetPaypalButton(confirmBtn);
+            
+            if (result.success) {
+                const paymentMessage = paymentType === 'final' 
+                    ? 'Final payment confirmed! We will deliver your project files shortly.'
+                    : 'Deposit payment confirmed! We will start working on your project.';
+                
+                if (result.receipt_path) {
+                    paymentMessage += ' Receipt uploaded successfully.';
+                }
+                
+                alert(paymentMessage);
+                closePaypalModal();
+                closePaymentModal();
+                
+                // Reset payment type
+                window.currentPaymentType = null;
+                
+                // Reload page to show updated payment status
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                alert('Payment confirmation failed: ' + result.message);
+                console.error('Payment failed:', result);
+            }
+        }
+
+        function resetPaypalButton(confirmBtn) {
+            confirmBtn.textContent = '> I\'VE PAID';
+            confirmBtn.disabled = false;
+        }
+
+        function confirmPayPalMePayment() {
+            // Check if there's a file to upload (mandatory for PayPal.me)
+            const fileInput = document.getElementById('paypal-me-receipt');
+            const hasFile = fileInput.files && fileInput.files.length > 0;
+            
+            if (!hasFile) {
+                showPayPalMeReceiptAlert();
+                return;
+            }
+            
+            // Show processing message
+            const confirmBtn = event.target;
+            confirmBtn.textContent = '> PROCESSING...';
+            confirmBtn.disabled = true;
+            
+            // Determine payment type
+            const paymentType = window.currentPaymentType || 'deposit';
+            
+            // Handle file upload (mandatory)
+            const formData = new FormData();
+            formData.append('order_id', '{{ order.id }}');
+            formData.append('tracking_code', '{{ order.tracking_code }}');
+            formData.append('payment_type', paymentType);
+            formData.append('receipt', fileInput.files[0]);
+            
+            // Send PayPal.me payment with receipt to backend
+            console.log('PayPal.me: Sending payment data with file:', formData);
+            
+            fetch('/api/paypal-payment', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: formData
+            })
+            .then(response => {
+                console.log('PayPal.me: Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(result => {
+                console.log('PayPal.me: Response result:', result);
+                resetPayPalMeButton(confirmBtn);
+                
+                if (result.success) {
+                    showPayPalSuccessAlert(paymentType);
+                    closePaypalModal();
+                    closePaymentModal();
+                    
+                    // Reset payment type
+                    window.currentPaymentType = null;
+                } else {
+                    alert('Payment confirmation failed: ' + (result.message || 'Unknown error'));
+                    console.error('PayPal.me payment failed:', result);
+                }
+            })
+            .catch(error => {
+                console.error('PayPal.me network error:', error);
+                console.error('PayPal.me error details:', error.message);
+                
+                // Show detailed error to user
+                alert('Network error: ' + error.message + '. Please try again or contact support.');
+                resetPayPalMeButton(confirmBtn);
+            });
+        }
+
+        function resetPayPalMeButton(confirmBtn) {
+            confirmBtn.textContent = '> I\'VE PAID';
+            confirmBtn.disabled = false;
+        }
+
+        function showPayPalMeReceiptAlert() {
+            // Create alert overlay
+            const alertOverlay = document.createElement('div');
+            alertOverlay.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
+            alertOverlay.innerHTML = `
+                <div class="terminal-border rounded-lg p-6 bg-black/90 max-w-md mx-4">
+                    <div class="text-terminal-orange text-xl font-cyber mb-4 text-center">
+                        ⚠ PAYMENT RECEIPT REQUIRED
+                    </div>
+                    <div class="text-terminal-green text-sm mb-4">
+                        To confirm your PayPal.me payment, you must upload a payment receipt image.
+                    </div>
+                    <div class="text-terminal-cyan text-xs mb-4 space-y-2">
+                        <div>• Please complete your payment via paypal.me/aymanalamawi18</div>
+                        <div>• Take a screenshot of your payment confirmation</div>
+                        <div>• Upload the receipt image using the file input</div>
+                        <div>• Then click "I'VE PAID VIA PAYPAL.ME" to confirm</div>
+                    </div>
+                    <div class="text-center">
+                        <button onclick="closePayPalMeReceiptAlert(this)" class="terminal-border rounded px-4 py-2 text-terminal-cyan hover:bg-terminal-cyan/10 transition-all duration-300">
+                            > UNDERSTOOD
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(alertOverlay);
+        }
+
+        function closePayPalMeReceiptAlert(button) {
+            const overlay = button.closest('.fixed');
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+
+        function showZainCashReceiptAlert() {
+            // Create alert overlay
+            const alertOverlay = document.createElement('div');
+            alertOverlay.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
+            alertOverlay.innerHTML = `
+                <div class="terminal-border rounded-lg p-6 bg-black/90 max-w-md mx-4">
+                    <div class="text-terminal-orange text-xl font-cyber mb-4 text-center">
+                        ⚠ PAYMENT RECEIPT REQUIRED
+                    </div>
+                    <div class="text-terminal-green text-sm mb-4">
+                        To confirm your Zain Cash payment, you must upload a payment receipt image.
+                    </div>
+                    <div class="text-terminal-cyan text-xs mb-4 space-y-2">
+                        <div>• Please complete your payment via Zain Cash number 0778138272</div>
+                        <div>• Take a screenshot of your payment confirmation</div>
+                        <div>• Upload the receipt image using the file input</div>
+                        <div>• Then click "CONFIRM PAYMENT" to verify</div>
+                    </div>
+                    <div class="text-center">
+                        <button onclick="closeZainCashReceiptAlert(this)" class="terminal-border rounded px-4 py-2 text-terminal-cyan hover:bg-terminal-cyan/10 transition-all duration-300">
+                            > UNDERSTOOD
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(alertOverlay);
+        }
+
+        function closeZainCashReceiptAlert(button) {
+            const overlay = button.closest('.fixed');
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+
+        function showPayPalSuccessAlert(paymentType) {
+            const isFinal = paymentType === 'final';
+            const title = isFinal ? '✅ FINAL PAYMENT CONFIRMED' : '✅ DEPOSIT PAYMENT CONFIRMED';
+            const message = isFinal 
+                ? 'Final payment confirmed! We will deliver your project files shortly.'
+                : 'Deposit payment confirmed! We will start working on your project.';
+            
+            const alertOverlay = document.createElement('div');
+            alertOverlay.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
+            alertOverlay.innerHTML = `
+                <div class="terminal-border rounded-lg p-6 bg-black/90 max-w-md mx-4">
+                    <div class="text-terminal-green text-xl font-cyber mb-4 text-center">
+                        ${title}
+                    </div>
+                    <div class="text-terminal-cyan text-sm mb-4 text-center">
+                        ${message}
+                    </div>
+                    <div class="text-terminal-green text-xs mb-4 text-center space-y-1">
+                        <div>🎉 Thank you for your payment!</div>
+                        <div>📧 You will receive email confirmation shortly</div>
+                        <div>� Click CONTINUE to refresh the page</div>
+                    </div>
+                    <div class="text-center">
+                        <button onclick="closePayPalSuccessAlert(this)" class="terminal-border rounded px-4 py-2 text-terminal-green hover:bg-terminal-green/10 transition-all duration-300">
+                            > CONTINUE
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(alertOverlay);
+        }
+
+        function showZainCashSuccessAlert(paymentType) {
+            const isFinal = paymentType === 'final';
+            const title = isFinal ? '✅ FINAL PAYMENT RECEIVED' : '✅ DEPOSIT PAYMENT RECEIVED';
+            const message = isFinal 
+                ? 'Final payment receipt uploaded successfully! We will verify your payment and deliver your project files.'
+                : 'Deposit payment receipt uploaded successfully! We will verify your payment and start working on your project.';
+            
+            const alertOverlay = document.createElement('div');
+            alertOverlay.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
+            alertOverlay.innerHTML = `
+                <div class="terminal-border rounded-lg p-6 bg-black/90 max-w-md mx-4">
+                    <div class="text-terminal-green text-xl font-cyber mb-4 text-center">
+                        ${title}
+                    </div>
+                    <div class="text-terminal-cyan text-sm mb-4 text-center">
+                        ${message}
+                    </div>
+                    <div class="text-terminal-green text-xs mb-4 text-center space-y-1">
+                        <div>🎉 Thank you for your payment!</div>
+                        <div>📧 We will verify your receipt shortly</div>
+                        <div>� Click CONTINUE to refresh the page</div>
+                    </div>
+                    <div class="text-center">
+                        <button onclick="closeZainCashSuccessAlert(this)" class="terminal-border rounded px-4 py-2 text-terminal-green hover:bg-terminal-green/10 transition-all duration-300">
+                            > CONTINUE
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(alertOverlay);
+        }
+
+        function closePayPalSuccessAlert(button) {
+            const overlay = button.closest('.fixed');
+            if (overlay) {
+                overlay.remove();
+            }
+            window.location.reload();
+        }
+
+        function closeZainCashSuccessAlert(button) {
+            const overlay = button.closest('.fixed');
+            if (overlay) {
+                overlay.remove();
+            }
+            window.location.reload();
+        }
+
+        function confirmZainCashPayment() {
+            const fileInput = document.getElementById('zaincash-receipt');
+            const filename = document.getElementById('receipt-filename');
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                showZainCashReceiptAlert();
+                return;
+            }
+            
+            // Show processing message
+            const confirmBtn = event.target;
+            confirmBtn.textContent = '> PROCESSING...';
+            confirmBtn.disabled = true;
+            
+            // Determine payment type based on current context
+            const paymentType = window.currentPaymentType || 'deposit';
+            
+            // Create FormData to send file and order information
+            const formData = new FormData();
+            formData.append('order_id', '{{ order.id }}');
+            formData.append('tracking_code', '{{ order.tracking_code }}');
+            formData.append('payment_type', paymentType);
+            formData.append('receipt', fileInput.files[0]);
+            
+            // Send payment receipt to backend
+            fetch('/api/zaincash-payment', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log('Zain Cash payment response:', result);
+                
+                // Reset button
+                confirmBtn.textContent = '> CONFIRM PAYMENT';
+                confirmBtn.disabled = false;
+                
+                if (result.success) {
+                    showZainCashSuccessAlert(paymentType);
+                    closeZainCashModal();
+                    closePaymentModal();
+                    
+                    // Reset payment type
+                    window.currentPaymentType = null;
+                } else {
+                    alert('Payment processing failed: ' + result.message);
+                    console.error('Payment failed:', result);
+                }
+            })
+            .catch(error => {
+                console.error('Network error:', error);
+                alert('Network error. Please try again.');
+                
+                // Reset button
+                confirmBtn.textContent = '> CONFIRM PAYMENT';
+                confirmBtn.disabled = false;
+            });
+        }
+
+        // Handle file input change
+        document.addEventListener('DOMContentLoaded', function() {
+            // Zain Cash file input
+            const fileInput = document.getElementById('zaincash-receipt');
+            const filename = document.getElementById('receipt-filename');
+            
+            if (fileInput && filename) {
+                fileInput.addEventListener('change', function() {
+                    if (this.files && this.files.length > 0) {
+                        filename.textContent = this.files[0].name;
+                    } else {
+                        filename.textContent = 'No file selected';
+                    }
+                });
+            }
+            
+            // PayPal.me file input
+            const paypalMeFileInput = document.getElementById('paypal-me-receipt');
+            const paypalMeFilename = document.getElementById('paypal-me-receipt-filename');
+            
+            if (paypalMeFileInput && paypalMeFilename) {
+                paypalMeFileInput.addEventListener('change', function() {
+                    if (this.files && this.files.length > 0) {
+                        paypalMeFilename.textContent = this.files[0].name;
+                    } else {
+                        paypalMeFilename.textContent = 'No file selected';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

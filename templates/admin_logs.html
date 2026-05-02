@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Logs - NEXAweb</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cyber-cyan': '#06b6d4',
+                        'cyber-teal': '#14b8a6',
+                        'cyber-purple': '#a855f7',
+                        'cyber-pink': '#ec4899',
+                        'cyber-magenta': '#e91e63',
+                        'deep-black': '#050505',
+                        'terminal-cyan': '#00ffff',
+                        'terminal-green': '#00ff00',
+                        'terminal-orange': '#ff9900'
+                    },
+                    fontFamily: {
+                        'cyber': ['Orbitron', 'monospace'],
+                        'rajdhani': ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-slate-950 text-white font-rajdhani overflow-x-hidden">
+    
+    <!-- Navbar -->
+    <nav class="fixed top-0 w-full z-50 backdrop-blur-lg bg-slate-950/80 border-b border-cyber-cyan/30">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold font-cyber bg-gradient-to-r from-cyber-cyan to-cyber-teal bg-clip-text text-transparent">
+                    NEXAweb
+                </div>
+                <div class="flex items-center space-x-6">
+                    <a href="{{ url_for('admin.admin_dashboard') }}" class="hover:text-cyber-cyan transition-colors">Dashboard</a>
+                    <a href="{{ url_for('auth.logout') }}" class="px-4 py-2 border border-cyber-cyan text-cyber-cyan rounded-lg hover:bg-cyber-cyan hover:text-black transition-all">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="min-h-screen pt-24 pb-20">
+        <div class="container mx-auto px-6">
+            <!-- Header -->
+            <div class="mb-8" data-aos="fade-down">
+                <h1 class="text-4xl font-bold font-cyber text-cyber-cyan mb-4">
+                    SECURITY LOGS
+                </h1>
+                <p class="text-gray-300">
+                    Monitor and track all security-related activities and system events
+                </p>
+            </div>
+
+            
+            <!-- Security Logs Table -->
+            <div class="backdrop-blur-xl bg-slate-900/60 border-2 border-cyber-cyan/30 rounded-2xl p-6" data-aos="fade-up">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-cyber-cyan">Recent Security Events</h2>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-gray-400">
+                            Total Logs: {{ logs.total if logs else 0 }}
+                        </span>
+                        <button onclick="location.reload()" class="px-3 py-1 bg-cyber-cyan/20 border border-cyber-cyan/50 text-cyber-cyan rounded-lg hover:bg-cyber-cyan/30 transition-colors text-sm">
+                            Refresh
+                        </button>
+                        <button onclick="confirmClearAllLogs()" class="px-3 py-1 bg-gradient-to-r from-cyber-pink to-cyber-magenta border border-cyber-pink/50 text-white rounded-lg hover:shadow-lg hover:shadow-cyber-pink/50 transform hover:scale-105 transition-all duration-300 text-sm font-semibold">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            Clear All Logs
+                        </button>
+                    </div>
+                </div>
+                
+                {% if logs and logs.items %}
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-cyber-cyan/30">
+                                    <th class="text-left py-3 px-4 text-cyber-cyan font-semibold">Timestamp</th>
+                                    <th class="text-left py-3 px-4 text-cyber-cyan font-semibold">Username</th>
+                                    <th class="text-left py-3 px-4 text-cyber-cyan font-semibold">IP Address</th>
+                                    <th class="text-left py-3 px-4 text-cyber-cyan font-semibold">Success</th>
+                                    <th class="text-left py-3 px-4 text-cyber-cyan font-semibold">User Agent</th>
+                                    <th class="text-left py-3 px-4 text-cyber-cyan font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in logs %}
+                                    <tr class="border-b border-slate-700/50 hover:bg-slate-800/30 transition-colors">
+                                        <td class="py-3 px-4 text-sm">
+                                            <span class="text-gray-300">
+                                                {{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') if log.timestamp else 'N/A' }}
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <span class="text-sm font-semibold text-cyber-cyan">{{ log.username or 'N/A' }}</span>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <span class="text-sm font-mono text-cyber-teal">{{ log.ip_address or 'N/A' }}</span>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            {% if log.success %}
+                                                <span class="px-2 py-1 bg-green-900/50 text-green-300 rounded text-xs font-semibold">SUCCESS</span>
+                                            {% else %}
+                                                <span class="px-2 py-1 bg-red-900/50 text-red-300 rounded text-xs font-semibold">FAILED</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <span class="text-sm text-gray-400 truncate max-w-xs block" title="{{ log.user_agent or 'N/A' }}">
+                                                {{ (log.user_agent or 'N/A')[:50] + '...' if log.user_agent and log.user_agent|length > 50 else (log.user_agent or 'N/A') }}
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <form method="POST" action="{{ url_for('admin.delete_logs') }}" class="inline">
+                                                <input type="hidden" name="log_id" value="{{ log.id }}">
+                                                <button type="submit" onclick="return confirm('Are you sure you want to delete this security log?')" 
+                                                        class="px-2 py-1 bg-red-600/20 border border-red-500/50 text-red-400 rounded hover:bg-red-600/30 transition-colors text-sm">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if logs.pages > 1 %}
+                        <div class="flex justify-center items-center space-x-2 mt-6">
+                            {% if logs.has_prev %}
+                                <a href="{{ url_for('admin.view_logs', page=logs.prev_num) }}" 
+                                   class="px-3 py-1 bg-slate-700 text-gray-300 rounded hover:bg-slate-600 transition-colors">
+                                    Previous
+                                </a>
+                            {% endif %}
+                            
+                            <span class="text-gray-400">
+                                Page {{ logs.page }} of {{ logs.pages }}
+                            </span>
+                            
+                            {% if logs.has_next %}
+                                <a href="{{ url_for('admin.view_logs', page=logs.next_num) }}" 
+                                   class="px-3 py-1 bg-slate-700 text-gray-300 rounded hover:bg-slate-600 transition-colors">
+                                    Next
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-12">
+                        <div class="text-gray-400 text-lg mb-4">
+                            <svg class="w-16 h-16 mx-auto mb-4 text-cyber-cyan/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            No security logs found
+                        </div>
+                        <p class="text-gray-500">
+                            Security events will appear here when users interact with the system
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Statistics Cards -->
+            {% if logs and logs.items %}
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8" data-aos="fade-up">
+                    <div class="bg-slate-800/50 border border-cyber-cyan/30 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-cyber-cyan">
+                            {{ logs.items | selectattr('success', 'equalto', True) | list | length }}
+                        </div>
+                        <div class="text-sm text-gray-400">Successful Logins</div>
+                    </div>
+                    <div class="bg-slate-800/50 border border-red-400/30 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-red-400">
+                            {{ logs.items | selectattr('success', 'equalto', False) | list | length }}
+                        </div>
+                        <div class="text-sm text-gray-400">Failed Logins</div>
+                    </div>
+                    <div class="bg-slate-800/50 border border-cyber-purple/30 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-cyber-purple">
+                            {{ logs.items | length }}
+                        </div>
+                        <div class="text-sm text-gray-400">Total Attempts</div>
+                    </div>
+                    <div class="bg-slate-800/50 border border-yellow-400/30 rounded-lg p-4">
+                        <div class="text-2xl font-bold text-yellow-400">
+                            {% set success_rate = ((logs.items | selectattr('success', 'equalto', True) | list | length / logs.items | length) * 100) if logs.items else 0 %}
+                            {{ "%.1f"|format(success_rate) }}%
+                        </div>
+                        <div class="text-sm text-gray-400">Success Rate</div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="{{ url_for('static', filename='css/style.css') }}"></script>
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+
+        // Neon Toast System
+        function showNeonToast(message, type = 'success') {
+            const toastContainer = document.getElementById('neonToastContainer');
+            if (!toastContainer) {
+                // Create toast container if it doesn't exist
+                const container = document.createElement('div');
+                container.id = 'neonToastContainer';
+                container.className = 'fixed top-20 right-6 z-50 space-y-2';
+                document.body.appendChild(container);
+            }
+            
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-green-900/90' : 'bg-red-900/90';
+            const borderColor = type === 'success' ? 'border-green-500' : 'border-red-500';
+            const textColor = type === 'success' ? 'text-green-300' : 'text-red-300';
+            const iconColor = type === 'success' ? 'text-green-400' : 'text-red-400';
+            const icon = type === 'success' ? 
+                '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' :
+                '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+            
+            toast.className = `${bgColor} backdrop-blur-lg border ${borderColor} rounded-lg p-4 shadow-2xl min-w-[300px] max-w-[400px] transform translate-x-full transition-all duration-500 ease-out`;
+            toast.innerHTML = `
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0 ${iconColor}">
+                        ${icon}
+                    </div>
+                    <div class="flex-1">
+                        <p class="${textColor} text-sm font-medium">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="${textColor} hover:opacity-70 transition-opacity">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+                toast.classList.add('translate-x-0');
+            }, 100);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        toast.remove();
+                    }
+                }, 500);
+            }, 5000);
+        }
+
+        // Cyberpunk Confirmation Popup
+        function confirmClearAllLogs() {
+            // Remove any existing modal first
+            const existingModal = document.getElementById('clearLogsModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // Create modal overlay with proper z-index
+            const modalOverlay = document.createElement('div');
+            modalOverlay.id = 'clearLogsModal';
+            modalOverlay.className = 'fixed inset-0 bg-black/90 backdrop-blur-xl z-[9998] flex items-center justify-center';
+            modalOverlay.style.zIndex = '9998';
+            
+            // Create modal content
+            const modalContent = document.createElement('div');
+            modalContent.className = 'backdrop-blur-2xl bg-slate-900/80 border-2 border-cyber-pink/50 rounded-2xl p-8 max-w-md mx-4 transform scale-100 transition-all duration-300 shadow-2xl shadow-cyber-pink/20';
+            modalContent.style.zIndex = '9999';
+            
+            modalContent.innerHTML = `
+                <div class="text-center">
+                    <div class="mb-6">
+                        <svg class="w-16 h-16 mx-auto text-cyber-pink animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold font-cyber text-cyber-pink mb-4">ADMIN AUTHENTICATION</h3>
+                    <p class="text-gray-300 mb-6">
+                        This action requires admin verification. Enter your password to proceed with log deletion.
+                    </p>
+                    <div class="bg-red-900/20 border border-red-500/30 rounded-lg p-3 mb-6">
+                        <p class="text-red-300 text-sm">
+                            <strong>⚠️ Critical Action:</strong> All security monitoring data will be permanently deleted.
+                        </p>
+                    </div>
+                    
+                    <!-- Password Input Field -->
+                    <div class="mb-6">
+                        <label for="adminPassword" class="block text-sm font-medium text-cyber-cyan mb-2">Admin Password</label>
+                        <input type="password" id="adminPassword" 
+                               class="w-full px-4 py-3 bg-slate-800/50 border-2 border-cyber-cyan/50 rounded-lg text-white placeholder-gray-400 focus:border-cyber-cyan focus:ring-2 focus:ring-cyber-cyan/20 transition-all"
+                               placeholder="Enter Admin Password to Purge">
+                    </div>
+                    
+                    <div class="flex space-x-4">
+                        <button onclick="cancelClearAllLogs()" class="flex-1 px-4 py-3 bg-slate-700 text-gray-300 rounded-lg hover:bg-slate-600 transition-colors">
+                            Cancel
+                        </button>
+                        <button onclick="executeClearAllLogs()" class="flex-1 px-4 py-3 bg-gradient-to-r from-cyber-pink to-cyber-magenta text-white font-bold rounded-lg hover:shadow-lg hover:shadow-cyber-pink/50 transform hover:scale-105 transition-all duration-300">
+                            Authenticate & Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            modalOverlay.appendChild(modalContent);
+            document.body.appendChild(modalOverlay);
+            
+            // Focus on password input
+            setTimeout(() => {
+                const passwordInput = document.getElementById('adminPassword');
+                if (passwordInput) {
+                    passwordInput.focus();
+                }
+            }, 200);
+        }
+
+        function cancelClearAllLogs() {
+            const modal = document.getElementById('clearLogsModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        function executeClearAllLogs() {
+            const passwordInput = document.getElementById('adminPassword');
+            const password = passwordInput.value;
+            
+            if (!password) {
+                showNeonToast('Please enter your admin password', 'error');
+                passwordInput.focus();
+                return;
+            }
+            
+            // Disable button during request
+            const button = event.target;
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = 'Authenticating...';
+            
+            // Create AbortController for timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+            
+            // Send AJAX request to delete all logs with password
+            fetch('/admin/delete-logs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: 'password=' + encodeURIComponent(password),
+                signal: controller.signal
+            })
+            .then(response => {
+                clearTimeout(timeoutId);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                cancelClearAllLogs();
+                if (data.success) {
+                    showNeonToast('System Logs Purged Successfully', 'success');
+                    // Immediately reload the page to show updated table
+                    location.reload();
+                } else {
+                    showNeonToast(data.message || 'Error purging logs', 'error');
+                }
+            })
+            .catch(error => {
+                clearTimeout(timeoutId);
+                cancelClearAllLogs();
+                if (error.name === 'AbortError') {
+                    showNeonToast('Request timeout. Please try again.', 'error');
+                } else {
+                    console.error('Delete logs error:', error);
+                    showNeonToast('Network error occurred', 'error');
+                }
+            })
+            .finally(() => {
+                // Re-enable button
+                button.disabled = false;
+                button.textContent = originalText;
+            });
+        }
+
+        // Auto-refresh logs every 30 seconds
+        setInterval(function() {
+            // Only refresh if user is still on this page
+            if (window.location.pathname === '/admin/security-logs') {
+                location.reload();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

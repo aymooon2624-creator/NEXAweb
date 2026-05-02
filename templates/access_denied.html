@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Denied - NEXAweb</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cyber-cyan': '#06b6d4',
+                        'cyber-teal': '#14b8a6',
+                        'cyber-purple': '#a855f7',
+                        'cyber-pink': '#ec4899',
+                        'deep-black': '#050505',
+                        'matrix-green': '#00ff41',
+                        'error-red': '#dc2626'
+                    },
+                    fontFamily: {
+                        'cyber': ['Orbitron', 'monospace'],
+                        'rajdhani': ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        @keyframes glitch {
+            0%, 100% {
+                text-shadow: 
+                    2px 2px 0 #ff00ff,
+                    -2px -2px 0 #00ffff,
+                    2px -2px 0 #ff00ff,
+                    -2px 2px 0 #00ffff;
+                transform: translate(0);
+            }
+            20% {
+                text-shadow: 
+                    -2px 2px 0 #ff00ff,
+                    2px -2px 0 #00ffff,
+                    -2px -2px 0 #ff00ff,
+                    2px 2px 0 #00ffff;
+                transform: translate(-2px, 2px);
+            }
+            40% {
+                text-shadow: 
+                    2px -2px 0 #ff00ff,
+                    -2px 2px 0 #00ffff,
+                    2px 2px 0 #ff00ff,
+                    -2px -2px 0 #00ffff;
+                transform: translate(-2px, -2px);
+            }
+            60% {
+                text-shadow: 
+                    -2px -2px 0 #ff00ff,
+                    2px 2px 0 #00ffff,
+                    -2px 2px 0 #ff00ff,
+                    2px -2px 0 #00ffff;
+                transform: translate(2px, -2px);
+            }
+            80% {
+                text-shadow: 
+                    2px 2px 0 #ff00ff,
+                    -2px -2px 0 #00ffff,
+                    2px -2px 0 #ff00ff,
+                    -2px 2px 0 #00ffff;
+                transform: translate(2px, 2px);
+            }
+        }
+
+        @keyframes data-stream {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+
+        .glitch-text {
+            animation: glitch 2s infinite;
+        }
+
+        .glitch-bg {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glitch-bg::before,
+        .glitch-bg::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 30%, rgba(220, 38, 38, 0.1) 50%, transparent 70%);
+            animation: glitch 3s infinite;
+        }
+
+        .glitch-bg::after {
+            animation-delay: 1.5s;
+            background: linear-gradient(-45deg, transparent 30%, rgba(6, 182, 212, 0.1) 50%, transparent 70%);
+        }
+
+        .data-stream {
+            position: fixed;
+            color: #00ff41;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: nowrap;
+            pointer-events: none;
+            animation: data-stream 3s linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-100vh); }
+            100% { transform: translateY(100vh); }
+        }
+
+        .scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #dc2626, transparent);
+            animation: scan 4s linear infinite;
+            pointer-events: none;
+        }
+
+        .error-code {
+            font-family: 'Courier New', monospace;
+            color: #dc2626;
+            text-shadow: 0 0 10px #dc2626;
+        }
+    </style>
+</head>
+<body class="bg-deep-black text-white font-rajdhani overflow-hidden">
+    <!-- Background Grid -->
+    <div class="fixed inset-0 cyber-grid opacity-20"></div>
+    
+    <!-- Glitch Effects -->
+    <div class="glitch-bg fixed inset-0"></div>
+    
+    <!-- Data Streams -->
+    <div class="data-stream" style="left: 10%; animation-delay: 0s;">01001000 01100101 01101100 01110000</div>
+    <div class="data-stream" style="left: 20%; animation-delay: 0.5s;">01100001 01101110 01100111 01110010</div>
+    <div class="data-stream" style="left: 30%; animation-delay: 1s;">01111001 00100000 01100100 01100101</div>
+    <div class="data-stream" style="left: 40%; animation-delay: 1.5s;">01101110 01101001 01100101 01100100</div>
+    <div class="data-stream" style="left: 50%; animation-delay: 2s;">01000001 01000011 01000011 01000101</div>
+    <div class="data-stream" style="left: 60%; animation-delay: 2.5s;">01010011 01010011 00100000 01000100</div>
+    <div class="data-stream" style="left: 70%; animation-delay: 3s;">01000101 01101110 01101001 01100101</div>
+    <div class="data-stream" style="left: 80%; animation-delay: 3.5s;">01000100 00100000 01010000 01110010</div>
+    <div class="data-stream" style="left: 90%; animation-delay: 4s;">01101111 01110100 01100101 01100011</div>
+    
+    <!-- Scan Line -->
+    <div class="scan-line"></div>
+
+    <!-- Main Content -->
+    <div class="min-h-screen flex items-center justify-center relative z-10">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <!-- Error Icon -->
+            <div class="mb-8" data-aos="zoom-in">
+                <div class="w-32 h-32 mx-auto relative">
+                    <div class="absolute inset-0 bg-error-red/20 rounded-full animate-pulse"></div>
+                    <div class="absolute inset-2 bg-error-red/30 rounded-full animate-pulse" style="animation-delay: 0.5s;"></div>
+                    <div class="absolute inset-4 bg-error-red/40 rounded-full animate-pulse" style="animation-delay: 1s;"></div>
+                    <div class="absolute inset-6 bg-error-red rounded-lg flex items-center justify-center">
+                        <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.502 0L4.316 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Title -->
+            <h1 class="text-6xl md:text-8xl font-bold font-cyber mb-4 glitch-text" data-aos="fade-up">
+                <span class="bg-gradient-to-r from-error-red to-cyber-pink bg-clip-text text-transparent">
+                    ACCESS DENIED
+                </span>
+            </h1>
+
+            <!-- Error Code -->
+            <div class="error-code text-2xl mb-6" data-aos="fade-up" data-aos-delay="200">
+                ERROR 403: FORBIDDEN
+            </div>
+
+            <!-- Error Description -->
+            <div class="backdrop-blur-xl bg-slate-900/60 border border-error-red/30 rounded-lg p-8 mb-8 shadow-2xl shadow-error-red/20" data-aos="fade-up" data-aos-delay="400">
+                <h2 class="text-2xl font-bold text-error-red mb-4">Security Protocol Activated</h2>
+                <p class="text-gray-300 mb-4">
+                    The requested resource is protected by our advanced security systems. Access is restricted to authorized personnel only.
+                </p>
+                <div class="text-left space-y-2 text-sm font-mono text-cyber-cyan">
+                    <div>&gt; Tracking code validation failed</div>
+                    <div>&gt; Order status not completed</div>
+                    <div>&gt; Security protocols engaged</div>
+                    <div>&gt; Access attempt logged</div>
+                </div>
+            </div>
+
+            <!-- Security Notice -->
+            <div class="bg-cyber-purple/20 border border-cyber-purple/30 rounded-lg p-6 mb-8" data-aos="fade-up" data-aos-delay="600">
+                <div class="flex items-center justify-center space-x-3 mb-4">
+                    <svg class="w-6 h-6 text-cyber-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                    <span class="text-cyber-purple font-semibold">Security Notice</span>
+                </div>
+                <p class="text-gray-300 text-sm">
+                    This page is only accessible to customers with completed orders and valid tracking codes. 
+                    If you believe this is an error, please contact our support team.
+                </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center" data-aos="fade-up" data-aos-delay="800">
+                <a href="{{ url_for('home') }}" 
+                   class="px-8 py-3 bg-gradient-to-r from-cyber-cyan to-cyber-teal text-black font-bold rounded-lg hover:shadow-lg hover:shadow-cyber-cyan/50 transform hover:scale-105 transition-all duration-300">
+                    Return to Home
+                </a>
+                <a href="{{ url_for('status') }}" 
+                   class="px-8 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors">
+                    Check Order Status
+                </a>
+            </div>
+
+            <!-- System Status -->
+            <div class="mt-12 text-xs text-gray-500 font-mono" data-aos="fade-up" data-aos-delay="1000">
+                <div>SYSTEM STATUS: <span class="text-matrix-green">OPERATIONAL</span></div>
+                <div>SECURITY LEVEL: <span class="text-cyber-purple">MAXIMUM</span></div>
+                <div>ACCESS LOG: <span class="text-error-red">RECORDED</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+
+        // Add random glitch effects
+        setInterval(() => {
+            const glitchElements = document.querySelectorAll('.glitch-text');
+            glitchElements.forEach(el => {
+                if (Math.random() > 0.7) {
+                    el.style.animation = 'none';
+                    setTimeout(() => {
+                        el.style.animation = '';
+                    }, 200);
+                }
+            });
+        }, 3000);
+
+        // Console security message
+        console.clear();
+        console.log('%c🚫 ACCESS DENIED 🚫', 'color: #dc2626; font-size: 20px; font-weight: bold; font-family: monospace;');
+        console.log('%cUnauthorized access attempt has been logged.', 'color: #06b6d4; font-family: monospace;');
+        console.log('%cSystem security protocols are active.', 'color: #00ff41; font-family: monospace;');
+    </script>
+</body>
+</html>

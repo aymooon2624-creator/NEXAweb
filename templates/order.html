@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="{{ 'ar' if session.get('lang') == 'ar' else 'en' }}" dir="{{ 'rtl' if session.get('lang') == 'ar' else 'ltr' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Dynamic SEO Meta Tags -->
+    {% if session.get('lang') == 'ar' %}
+    <title>اطلب الآن - أيمن سوليوشنز | برمجة وأمن سيبراني</title>
+    <meta name="description" content="اطلب حلول برمجية ذكية وتأمين بيانات بأحدث تقنيات الأمن السيبراني.">
+    <meta name="keywords" content="طلب خدمة، برمجة، أمن سيبراني، تطوير مواقع، Flask, Python, أيمن سوليوشنز، حلول برمجية">
+    {% else %}
+    <title>Order Now - NEXAweb</title>
+    <meta name="description" content="Order professional programming services from NEXAweb - web development, AI systems, and cybersecurity solutions.">
+    <meta name="keywords" content="order service, programming, cybersecurity, web development, Flask, Python, NEXAweb">
+    {% endif %}
+    
+    <!-- Additional SEO Meta Tags -->
+    <meta name="author" content="NEXAweb">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="{{ 'اطلب الآن - أيمن سوليوشنز | برمجة وأمن سيبراني' if session.get('lang') == 'ar' else 'Order Now - NEXAweb' }}">
+    <meta property="og:description" content="{{ 'اطلب حلول برمجية ذكية وتأمين بيانات بأحدث تقنيات الأمن السيبراني.' if session.get('lang') == 'ar' else 'Order professional programming services from NEXAweb - web development, AI systems, and cybersecurity solutions.' }}">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="{{ 'ar_AR' if session.get('lang') == 'ar' else 'en_US' }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cyber-cyan': '#06b6d4',
+                        'cyber-teal': '#14b8a6',
+                        'cyber-purple': '#a855f7',
+                        'cyber-pink': '#ec4899',
+                        'deep-black': '#050505'
+                    },
+                    fontFamily: {
+                        'cyber': ['Orbitron', 'monospace'],
+                        'rajdhani': ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- intl-tel-input CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css">
+</head>
+<body class="bg-slate-950 text-white font-rajdhani overflow-x-hidden">
+        
+    <!-- Neon Toast Container -->
+    <div id="neonToastContainer" class="fixed top-20 right-6 z-50 space-y-2"></div>
+    
+    <!-- Navbar -->
+    <nav class="fixed top-0 w-full z-50 backdrop-blur-lg bg-slate-950/80 border-b border-cyber-cyan/30">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold font-cyber bg-gradient-to-r from-cyber-cyan to-cyber-teal bg-clip-text text-transparent" data-aos="fade-right">
+                    NEXAweb
+                </div>
+                <div class="flex items-center space-x-6" data-aos="fade-left">
+                    <a href="{{ url_for('main.home') }}" class="hover:text-cyber-cyan transition-colors duration-300 relative group">
+                        Home
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-cyan transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                    <a href="{{ url_for('main.home') }}#projects" class="hover:text-cyber-cyan transition-colors duration-300 relative group">
+                        Projects
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-cyan transition-all duration-300 group-hover:w-full"></span>
+                    </a>
+                  
+                    <a href="{{ url_for('main.home') }}" class="px-4 py-2 border border-cyber-cyan text-cyber-cyan rounded-lg hover:bg-cyber-cyan hover:text-black transition-all duration-300">
+                        Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Order Form Section -->
+    <section class="min-h-screen pt-24 pb-20 relative flex items-center justify-center">
+        <div class="container mx-auto px-6 relative z-10">
+            <!-- Header -->
+            <div class="text-center mb-12" data-aos="fade-down">
+                <h1 class="text-5xl md:text-6xl font-bold font-cyber mb-4 glitch">
+                    <span class="bg-gradient-to-r from-cyber-cyan via-cyber-pink to-cyber-purple bg-clip-text text-transparent">
+                        ORDER NOW
+                    </span>
+                </h1>
+                <p class="text-xl text-gray-300 mb-8">
+                    Start your next project with cutting-edge cyberpunk development
+                </p>
+            </div>
+
+            <!-- Order Form -->
+            <div class="max-w-2xl mx-auto" data-aos="fade-up">
+                <div class="backdrop-blur-xl bg-slate-900/60 border-2 border-cyber-cyan/30 rounded-2xl p-8 shadow-2xl shadow-cyber-cyan/10">
+                    <form method="POST" action="{{ url_for('orders.submit_order') }}" enctype="multipart/form-data" class="space-y-6">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <!-- Customer Information -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="form-group">
+                                <label class="block text-cyber-cyan font-semibold mb-2">Full Name *</label>
+                                <input type="text" 
+                                       name="name" 
+                                       required
+                                       class="w-full px-4 py-3 bg-slate-800/50 border border-cyber-cyan/30 rounded-lg text-white placeholder-gray-400 focus:border-cyber-cyan focus:outline-none transition-colors"
+                                       placeholder="John Doe">
+                            </div>
+                            <div class="form-group">
+                                <label class="block text-cyber-cyan font-semibold mb-2">Email Address *</label>
+                                <input type="email" 
+                                       name="email" 
+                                       required
+                                       class="w-full px-4 py-3 bg-slate-800/50 border border-cyber-cyan/30 rounded-lg text-white placeholder-gray-400 focus:border-cyber-cyan focus:outline-none transition-colors"
+                                       placeholder="john@example.com">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="block text-cyber-cyan font-semibold mb-2">Phone Number</label>
+                            <div class="relative">
+                                <input type="tel" 
+                                       id="phone"
+                                       name="phone" 
+                                       required
+                                       class="w-full px-4 py-3 bg-slate-800/50 border border-cyber-cyan/30 rounded-lg text-white placeholder-gray-400 focus:border-cyber-cyan focus:outline-none transition-colors"
+                                       placeholder="Phone number">
+                            </div>
+                            <p id="phoneError" class="text-red-400 text-sm mt-2 hidden">Please enter a valid phone number</p>
+                        </div>
+
+                        <!-- Project Details -->
+                        <div class="form-group">
+                            <label class="block text-cyber-cyan font-semibold mb-2">Project Type *</label>
+                            <select name="project_type" 
+                                    required
+                                    class="w-full px-4 py-3 bg-slate-800/50 border border-cyber-cyan/30 rounded-lg text-white focus:border-cyber-cyan focus:outline-none transition-colors">
+                                <option value="">Select a project type</option>
+                                <option value="web">Web Development</option>
+                                <option value="mobile">Mobile App</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        
+                        <div class="form-group">
+                            <label class="block text-cyber-cyan font-semibold mb-2">Project Details *</label>
+                            <textarea name="details" 
+                                      required
+                                      rows="6"
+                                      class="w-full px-4 py-3 bg-slate-800/50 border border-cyber-cyan/30 rounded-lg text-white placeholder-gray-400 focus:border-cyber-cyan focus:outline-none transition-colors resize-none"
+                                      placeholder="Describe your project requirements, goals, and any specific features you need..."></textarea>
+                        </div>
+
+                        <!-- Pricing Information - Admin Only -->
+                        <!-- Price fields removed - controlled by admin only -->
+
+                        <!-- File Upload -->
+                        <div class="form-group">
+                            <label class="block text-cyber-cyan font-semibold mb-2">Project Files (Optional)</label>
+                            <div class="relative">
+                                <input type="file" 
+                                       name="file" 
+                                       accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                       class="w-full px-4 py-3 bg-slate-800/50 border border-cyber-cyan/30 rounded-lg text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyber-cyan/20 file:text-cyber-cyan hover:file:bg-cyber-cyan/30 cursor-pointer">
+                                <p class="text-sm text-gray-400 mt-2">
+                                    Accepted formats: PDF, DOC, DOCX, JPG, JPEG, PNG (Max 16MB)
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Terms & Conditions -->
+                        <div class="form-group">
+                            <div class="flex items-start space-x-3">
+                                <input type="checkbox" 
+                                       id="termsCheckbox"
+                                       name="terms" 
+                                       value="true"
+                                       class="mt-1 w-4 h-4 bg-slate-800/50 border border-cyber-cyan/30 rounded text-cyber-cyan focus:border-cyber-cyan focus:ring-2 focus:ring-cyber-cyan/20">
+                                <label for="termsCheckbox" class="text-sm text-gray-300">
+                                    I agree to the <a href="{{ url_for('main.terms') }}" target="_blank" class="text-cyber-cyan hover:text-cyber-teal transition-colors">Terms of Service</a> and <a href="{{ url_for('main.privacy') }}" target="_blank" class="text-cyber-cyan hover:text-cyber-teal transition-colors">Privacy Policy</a> *
+                                </label>
+                            </div>
+                            <p id="termsError" class="text-red-400 text-sm mt-2 hidden">You must accept the terms and conditions to submit your order</p>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center">
+                            <button type="submit" 
+                                    id="submitButton"
+                                    disabled
+                                    class="px-8 py-4 bg-gradient-to-r from-cyber-cyan to-cyber-teal text-black font-bold rounded-lg hover:shadow-lg hover:shadow-cyber-cyan/50 transform hover:scale-105 transition-all duration-300 relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 neon-pulse">
+                                <span class="relative z-10">Submit Order</span>
+                                <div class="absolute inset-0 bg-gradient-to-r from-cyber-cyan to-cyber-teal opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <div class="absolute inset-0 bg-cyber-cyan animate-pulse opacity-20"></div>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+  
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="{{ url_for('static', filename='css/style.css') }}"></script>
+    <!-- intl-tel-input JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+
+        // Initialize intl-tel-input
+        const phoneInput = document.querySelector("#phone");
+        const iti = window.intlTelInput(phoneInput, {
+            initialCountry: "jo",
+            preferredCountries: ["jo", "sa", "ae", "eg", "us", "gb"],
+            separateDialCode: true,
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js",
+            customPlaceholder: function(selectedCountryPlaceholder, selectedCountryData) {
+                return "e.g. " + selectedCountryPlaceholder;
+            },
+            formatOnDisplay: true,
+            nationalMode: false
+        });
+
+        // Phone validation with intl-tel-input
+        function validatePhone() {
+            const phoneError = document.getElementById('phoneError');
+            const submitButton = document.getElementById('submitButton');
+            
+            if (iti.isValidNumber()) {
+                phoneError.classList.add('hidden');
+                return true;
+            } else {
+                phoneError.textContent = 'Please enter a valid phone number';
+                phoneError.classList.remove('hidden');
+                return false;
+            }
+        }
+
+        // Terms checkbox validation
+        function validateTerms() {
+            const termsCheckbox = document.getElementById('termsCheckbox');
+            const termsError = document.getElementById('termsError');
+            const submitButton = document.getElementById('submitButton');
+            
+            if (!termsCheckbox.checked) {
+                termsError.classList.remove('hidden');
+                submitButton.disabled = true;
+                return false;
+            } else {
+                termsError.classList.add('hidden');
+                submitButton.disabled = false;
+                return true;
+            }
+        }
+
+        // Event listeners
+        phoneInput.addEventListener('countrychange', validatePhone);
+        phoneInput.addEventListener('input', validatePhone);
+        document.getElementById('termsCheckbox').addEventListener('change', validateTerms);
+
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const phoneValid = validatePhone();
+            const termsValid = validateTerms();
+            
+            if (!phoneValid || !termsValid) {
+                e.preventDefault();
+                return false;
+            }
+            
+            // Set the full international phone number
+            const fullPhoneNumber = iti.getNumber();
+            const phoneInputField = document.querySelector('input[name="phone"]');
+            phoneInputField.value = fullPhoneNumber;
+        });
+
+        // Neon Toast System
+        function showNeonToast(message, type = 'error') {
+            const toastContainer = document.getElementById('neonToastContainer');
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'error' ? 'bg-red-900/90' : 'bg-green-900/90';
+            const borderColor = type === 'error' ? 'border-red-500' : 'border-green-500';
+            const textColor = type === 'error' ? 'text-red-300' : 'text-green-300';
+            const iconColor = type === 'error' ? 'text-red-400' : 'text-green-400';
+            const icon = type === 'error' ? 
+                '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' :
+                '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+            
+            toast.className = `${bgColor} backdrop-blur-lg border ${borderColor} rounded-lg p-4 shadow-2xl min-w-[300px] max-w-[400px] transform translate-x-full transition-all duration-500 ease-out`;
+            toast.innerHTML = `
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0 ${iconColor}">
+                        ${icon}
+                    </div>
+                    <div class="flex-1">
+                        <p class="${textColor} text-sm font-medium">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="${textColor} hover:opacity-70 transition-opacity">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+                toast.classList.add('translate-x-0');
+            }, 100);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        toast.remove();
+                    }
+                }, 500);
+            }, 5000);
+        }
+
+        // Check for flash messages and show as neon toasts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Flash messages will be handled by the enhanced form validation
+            // The backend flash messages will work with the standard Flask template system
+        });
+
+        // Enhanced form validation with neon toasts
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const phoneValid = validatePhone();
+            const termsValid = validateTerms();
+            
+            if (!phoneValid || !termsValid) {
+                e.preventDefault();
+                
+                if (!termsValid) {
+                    showNeonToast('You must accept the terms and conditions to submit your order', 'error');
+                } else if (!phoneValid) {
+                    showNeonToast('Please enter a valid phone number', 'error');
+                } else {
+                    showNeonToast('Please fill in all required fields correctly', 'error');
+                }
+                return false;
+            }
+            
+            // Set the full international phone number
+            const fullPhoneNumber = iti.getNumber();
+            const phoneInputField = document.querySelector('input[name="phone"]');
+            phoneInputField.value = fullPhoneNumber;
+        });
+
+            </script>
+    
+    <style>
+        @keyframes neon-pulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(6, 182, 212, 0.5),
+                           0 0 40px rgba(6, 182, 212, 0.3),
+                           0 0 60px rgba(6, 182, 212, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(6, 182, 212, 0.8),
+                           0 0 60px rgba(6, 182, 212, 0.5),
+                           0 0 90px rgba(6, 182, 212, 0.3);
+            }
+        }
+        
+        @keyframes glitch {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-2px); }
+            40% { transform: translateX(2px); }
+            60% { transform: translateX(-1px); }
+            80% { transform: translateX(1px); }
+        }
+        
+        .neon-pulse {
+            animation: neon-pulse 2s ease-in-out infinite;
+        }
+        
+        .neon-pulse:not(:disabled):hover {
+            animation: neon-pulse 0.5s ease-in-out infinite;
+        }
+        
+        .glitch {
+            animation: glitch 0.3s ease-in-out;
+        }
+        
+        /* Enhanced cyberpunk styling for inputs */
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="file"],
+        select,
+        textarea {
+            backdrop-filter: blur(10px);
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus,
+        input[type="file"]:focus,
+        select:focus,
+        textarea:focus {
+            border-color: rgba(6, 182, 212, 0.8);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.3),
+                       inset 0 0 20px rgba(6, 182, 212, 0.1);
+            background: rgba(30, 41, 59, 0.7);
+            transform: translateY(-1px);
+        }
+        
+        /* Country code dropdown styling */
+        #countryCode {
+            background: rgba(6, 182, 212, 0.1);
+            border-right: 1px solid rgba(6, 182, 212, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        #countryCode:focus {
+            background: rgba(6, 182, 212, 0.2);
+            box-shadow: inset 0 0 10px rgba(6, 182, 212, 0.3);
+        }
+        
+        /* Checkbox styling */
+        input[type="checkbox"] {
+            backdrop-filter: blur(10px);
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        input[type="checkbox"]:checked {
+            background: rgba(6, 182, 212, 0.2);
+            border-color: rgba(6, 182, 212, 0.8);
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+        }
+        
+        input[type="checkbox"]:hover {
+            border-color: rgba(6, 182, 212, 0.6);
+            box-shadow: 0 0 5px rgba(6, 182, 212, 0.3);
+        }
+        
+        /* Form group styling */
+        .form-group {
+            position: relative;
+        }
+        
+        .form-group::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, transparent 50%, rgba(168, 85, 247, 0.1) 100%);
+            border-radius: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .form-group:hover::before {
+            opacity: 1;
+        }
+        
+        /* Main form container styling */
+        .backdrop-blur-xl {
+            backdrop-filter: blur(20px);
+            background: rgba(15, 23, 42, 0.8);
+            border: 2px solid rgba(6, 182, 212, 0.3);
+            box-shadow: 0 0 40px rgba(6, 182, 212, 0.1),
+                       0 0 80px rgba(6, 182, 212, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .backdrop-blur-xl:hover {
+            border-color: rgba(6, 182, 212, 0.5);
+            box-shadow: 0 0 60px rgba(6, 182, 212, 0.2),
+                       0 0 120px rgba(6, 182, 212, 0.1);
+        }
+        
+        /* Label styling */
+        label {
+            text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+            font-weight: 600;
+        }
+        
+        /* Error message styling */
+        .text-red-400 {
+            text-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+        }
+        
+        /* Link styling */
+        a {
+            position: relative;
+            text-shadow: 0 0 5px rgba(6, 182, 212, 0.3);
+        }
+        
+        a:hover {
+            text-shadow: 0 0 10px rgba(6, 182, 212, 0.8);
+        }
+        
+        /* intl-tel-input cyberpunk styling */
+        .intl-tel-input {
+            width: 100%;
+        }
+        
+        .intl-tel-input .country-list {
+            background: rgba(15, 23, 42, 0.95) !important;
+            backdrop-filter: blur(10px) !important;
+            border: 2px solid rgba(6, 182, 212, 0.6) !important;
+            border-radius: 0.75rem !important;
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.4),
+                       0 0 60px rgba(6, 182, 212, 0.2),
+                       inset 0 0 20px rgba(6, 182, 212, 0.1) !important;
+            z-index: 9999 !important;
+            max-height: 250px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(6, 182, 212, 0.5) rgba(15, 23, 42, 0.5);
+        }
+        
+        .intl-tel-input .country-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .intl-tel-input .country-list::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 3px;
+        }
+        
+        .intl-tel-input .country-list::-webkit-scrollbar-thumb {
+            background: rgba(6, 182, 212, 0.5);
+            border-radius: 3px;
+        }
+        
+        .intl-tel-input .country-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(6, 182, 212, 0.8);
+        }
+        
+        .intl-tel-input .country-list .country {
+            color: #ffffff !important;
+            padding: 12px 16px !important;
+            border-bottom: 1px solid rgba(6, 182, 212, 0.2) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .intl-tel-input .country-list .country::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .intl-tel-input .country-list .country:hover {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(20, 184, 166, 0.1)) !important;
+            color: #06b6d4 !important;
+            transform: translateX(2px);
+            box-shadow: inset 0 0 20px rgba(6, 182, 212, 0.2);
+        }
+        
+        .intl-tel-input .country-list .country:hover::before {
+            left: 100%;
+        }
+        
+        .intl-tel-input .country-list .country.highlight {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(20, 184, 166, 0.2)) !important;
+            color: #06b6d4 !important;
+            box-shadow: inset 0 0 25px rgba(6, 182, 212, 0.3);
+        }
+        
+        .intl-tel-input .country-list .country .dial-code {
+            color: #14b8a6 !important;
+            font-weight: 600;
+            text-shadow: 0 0 5px rgba(20, 184, 166, 0.5);
+        }
+        
+        .intl-tel-input .country-list .country:hover .dial-code {
+            color: #06b6d4 !important;
+            text-shadow: 0 0 10px rgba(6, 182, 212, 0.8);
+        }
+        
+        .intl-tel-input .country-list .country .country-name {
+            color: #ffffff !important;
+            font-weight: 500;
+        }
+        
+        .intl-tel-input .country-list .country:hover .country-name {
+            color: #06b6d4 !important;
+            text-shadow: 0 0 8px rgba(6, 182, 212, 0.6);
+        }
+        
+        .intl-tel-input .country-list .country .flag {
+            margin-right: 12px;
+            filter: drop-shadow(0 0 3px rgba(6, 182, 212, 0.3));
+        }
+        
+        .intl-tel-input .country-list .country:hover .flag {
+            filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.8));
+        }
+        
+        .intl-tel-input .country-list .divider {
+            border-bottom: 2px solid rgba(6, 182, 212, 0.4) !important;
+            margin: 4px 0;
+        }
+        
+        .intl-tel-input .country-list .no-results {
+            color: #94a3b8;
+            padding: 16px;
+            text-align: center;
+            font-style: italic;
+            text-shadow: 0 0 3px rgba(148, 163, 184, 0.3);
+        }
+        
+        .intl-tel-input .selected-flag {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(20, 184, 166, 0.1)) !important;
+            border: 2px solid rgba(6, 182, 212, 0.5) !important;
+            border-radius: 0.5rem 0 0 0.5rem !important;
+            padding: 0 12px !important;
+            margin: 0 !important;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease !important;
+        }
+        
+        .intl-tel-input .selected-flag:hover {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(20, 184, 166, 0.2)) !important;
+            border-color: rgba(6, 182, 212, 0.8) !important;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+        }
+        
+        .intl-tel-input .selected-flag .iti-flag {
+            margin-right: 8px;
+        }
+        
+        .intl-tel-input .selected-flag .arrow {
+            border-top: 5px solid #06b6d4 !important;
+            border-right: 5px solid transparent !important;
+            border-left: 5px solid transparent !important;
+            filter: drop-shadow(0 0 3px rgba(6, 182, 212, 0.8));
+        }
+        
+        /* Ensure dropdown appears above all elements */
+        .iti-container {
+            z-index: 99999 !important;
+        }
+        
+        /* Phone input field styling with better alignment */
+        .intl-tel-input input[type="tel"] {
+            padding-left: 60px !important;
+            height: 48px !important;
+            line-height: 48px !important;
+            font-size: 16px !important;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .intl-tel-input input[type="tel"] {
+                padding-left: 55px !important;
+                font-size: 14px !important;
+            }
+            
+            .intl-tel-input .selected-flag {
+                padding: 0 8px !important;
+            }
+            
+            .intl-tel-input .selected-flag .iti-flag {
+                margin-right: 6px;
+            }
+        }
+        
+        /* Search highlighting with neon colors */
+        .intl-tel-input .country-list .country .highlight {
+            background: linear-gradient(90deg, rgba(6, 182, 212, 0.4), rgba(20, 184, 166, 0.3)) !important;
+            color: #ffffff !important;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 600;
+            text-shadow: 0 0 8px rgba(6, 182, 212, 0.8);
+        }
+        
+        /* Specific CSS overrides for intl-tel-input library */
+        .iti__country-list {
+            background-color: #0f172a !important;
+            border: 1px solid #06b6d4 !important;
+            backdrop-filter: blur(10px) !important;
+            border-radius: 0.5rem !important;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.3) !important;
+            z-index: 9999 !important;
+        }
+        
+        .iti__country-name {
+            color: #ffffff !important;
+        }
+        
+        .iti__dial-code {
+            color: #ffffff !important;
+        }
+        
+        .iti__country:hover {
+            background: rgba(6, 182, 212, 0.2) !important;
+        }
+        
+        .iti__highlight {
+            background: rgba(6, 182, 212, 0.2) !important;
+        }
+        
+        .iti {
+            width: 100% !important;
+        }
+        
+        .iti__flag-container {
+            background: rgba(6, 182, 212, 0.1) !important;
+            border: 1px solid rgba(6, 182, 212, 0.3) !important;
+            border-radius: 0.375rem 0 0 0.375rem !important;
+        }
+        
+        .iti__selected-flag {
+            background: transparent !important;
+            padding-left: 12px !important;
+        }
+        
+        .iti__selected-flag .iti__flag {
+            margin-right: 8px !important;
+        }
+        
+        .iti__arrow {
+            border-top: 4px solid #06b6d4 !important;
+            border-right: 4px solid transparent !important;
+            border-left: 4px solid transparent !important;
+            margin-left: 6px !important;
+        }
+        
+        .iti__country {
+            padding: 8px 12px !important;
+            border-bottom: 1px solid rgba(6, 182, 212, 0.1) !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .iti__country:hover .iti__country-name {
+            color: #06b6d4 !important;
+        }
+        
+        .iti__country:hover .iti__dial-code {
+            color: #06b6d4 !important;
+        }
+        
+        .iti__divider {
+            border-bottom: 1px solid rgba(6, 182, 212, 0.2) !important;
+        }
+        
+        .iti__no-results {
+            color: #94a3b8 !important;
+            padding: 12px !important;
+            text-align: center !important;
+        }
+        
+        /* Container width fix */
+        .iti.iti--allow-dropdown {
+            width: 100% !important;
+        }
+        
+        /* Input padding fix to prevent overlap */
+        .iti__tel-input {
+            padding-left: 60px !important;
+        }
+        
+        .iti--allow-dropdown .iti__tel-input {
+            padding-left: 60px !important;
+        }
+        
+        .iti--separate-dial-code .iti__tel-input {
+            padding-left: 90px !important;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .iti__tel-input {
+                padding-left: 55px !important;
+            }
+            
+            .iti--allow-dropdown .iti__tel-input {
+                padding-left: 55px !important;
+            }
+            
+            .iti--separate-dial-code .iti__tel-input {
+                padding-left: 85px !important;
+            }
+        }
+    </style>
+
+
+</body>
+</html>

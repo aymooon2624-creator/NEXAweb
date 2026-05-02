@@ -1,0 +1,45 @@
+services:
+  # Web Service
+  - type: web
+    name: NEXAweb
+    env: python
+    plan: free
+    buildCommand: "chmod +x render-build.sh && ./render-build.sh"
+    startCommand: "gunicorn app:app --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: FLASK_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGO_URI
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+    healthCheckPath: /health
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - src/**
+        - requirements.txt
+        - render-build.sh
+        - app.py
+        - models.py
+        - database.py
+        - routes/**
+        - templates/**
+        - static/**
+
+# Database Configuration
+databases:
+  - name: NEXAweb-DB
+    databaseName: nexaweb
+    user: nexaweb-user
+
+# Render Configuration
+version: "1.0"

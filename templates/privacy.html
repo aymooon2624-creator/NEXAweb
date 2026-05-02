@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - NEXAweb</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cyber-cyan': '#06b6d4',
+                        'cyber-teal': '#14b8a6',
+                        'cyber-purple': '#a855f7',
+                        'cyber-pink': '#ec4899',
+                        'deep-black': '#050505'
+                    },
+                    fontFamily: {
+                        'cyber': ['Orbitron', 'monospace'],
+                        'rajdhani': ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .cyber-grid {
+            background-image: 
+                linear-gradient(rgba(6, 182, 212, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6, 182, 212, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: grid-move 10s linear infinite;
+        }
+        
+        @keyframes grid-move {
+            0% { background-position: 0 0; }
+            100% { background-position: 50px 50px; }
+        }
+        
+        .section-card {
+            backdrop-filter: blur(20px);
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+        }
+        
+        .section-card:hover {
+            border-color: rgba(6, 182, 212, 0.4);
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.1);
+        }
+        
+        .neon-text {
+            text-shadow: 0 0 10px currentColor;
+        }
+        
+        .scroll-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .scroll-to-top.visible {
+            opacity: 1;
+        }
+        
+        .data-item {
+            background: rgba(6, 182, 212, 0.1);
+            border-left: 3px solid #06b6d4;
+        }
+    </style>
+</head>
+<body class="bg-deep-black text-white font-rajdhani">
+    
+    <!-- Background Grid -->
+    <div class="fixed inset-0 cyber-grid opacity-10"></div>
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 backdrop-blur-lg bg-slate-950/80 border-b border-cyber-cyan/30">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold font-cyber bg-gradient-to-r from-cyber-cyan to-cyber-teal bg-clip-text text-transparent">
+                    NEXAweb
+                </div>
+                <div class="flex items-center space-x-6">
+                    <a href="{{ url_for('main.home') }}" class="hover:text-cyber-cyan transition-colors duration-300">
+                        Home
+                    </a>
+                    <a href="{{ url_for('main.terms') }}" class="hover:text-cyber-cyan transition-colors duration-300">
+                        Terms of Service
+                    </a>
+                    <a href="{{ url_for('orders.order_form') }}" class="px-4 py-2 border border-cyber-cyan text-cyber-cyan rounded-lg hover:bg-cyber-cyan hover:text-black transition-all duration-300">
+                        Submit Order
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="min-h-screen pt-20 pb-20 relative z-10">
+        <div class="container mx-auto px-6 max-w-4xl">
+            
+            <!-- Header -->
+            <div class="text-center mb-12" data-aos="fade-down">
+                <h1 class="text-5xl md:text-6xl font-bold font-cyber mb-4">
+                    <span class="bg-gradient-to-r from-cyber-cyan via-cyber-pink to-cyber-purple bg-clip-text text-transparent neon-text">
+                        Privacy Policy
+                    </span>
+                </h1>
+                <p class="text-xl text-gray-300 mb-2">
+                    Last updated: {{ moment().format('MMMM D, YYYY') if moment else 'December 2024' }}
+                </p>
+                <p class="text-gray-400">
+                    Your privacy is important to us. Here's how we collect, use, and protect your data.
+                </p>
+            </div>
+
+            <!-- Introduction -->
+            <div class="section-card rounded-2xl p-8 mb-8" data-aos="fade-up">
+                <h2 class="text-3xl font-bold font-cyber text-cyber-cyan mb-4">Our Privacy Commitment</h2>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    At NEXAweb, we are committed to protecting your privacy and ensuring the security of your personal information. 
+                    This Privacy Policy explains how we collect, use, store, and protect your data when you use our website and services.
+                </p>
+                <p class="text-gray-300 leading-relaxed">
+                    By using NEXAweb, you agree to the collection and use of information in accordance with this policy.
+                </p>
+            </div>
+
+            <!-- Data Collection -->
+            <div class="section-card rounded-2xl p-8 mb-8" data-aos="fade-up" data-aos-delay="100">
+                <h2 class="text-3xl font-bold font-cyber text-cyber-purple mb-4">What Data We Collect</h2>
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-xl font-semibold text-cyber-purple mb-3">Personal Information</h3>
+                        <div class="space-y-3">
+                            <div class="data-item rounded-lg p-4">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <span class="text-cyber-purple">Name</span>
+                                    <span class="text-gray-400 text-sm">Required for project identification</span>
+                                </div>
+                                <p class="text-gray-300 text-sm">Your full name to personalize our communications and project documentation.</p>
+                            </div>
+                            <div class="data-item rounded-lg p-4">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <span class="text-cyber-purple">Email Address</span>
+                                    <span class="text-gray-400 text-sm">Required for communication</span>
+                                </div>
+                                <p class="text-gray-300 text-sm">Used for project updates, invoices, and important notifications.</p>
+                            </div>
+                            <div class="data-item rounded-lg p-4">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <span class="text-cyber-purple">Phone Number</span>
+                                    <span class="text-gray-400 text-sm">Required for project coordination</span>
+                                </div>
+                                <p class="text-gray-300 text-sm">Used for urgent project communications and verification.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-semibold text-cyber-purple mb-3">Project Details</h3>
+                        <div class="space-y-3">
+                            <div class="data-item rounded-lg p-4">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <span class="text-cyber-purple">Project Type</span>
+                                    <span class="text-gray-400 text-sm">Web, Mobile, or Other</span>
+                                </div>
+                                <p class="text-gray-300 text-sm">Helps us understand your project requirements and assign the right team.</p>
+                            </div>
+                            <div class="data-item rounded-lg p-4">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <span class="text-cyber-purple">Project Description</span>
+                                    <span class="text-gray-400 text-sm">Detailed requirements</span>
+                                </div>
+                                <p class="text-gray-300 text-sm">Your project specifications, goals, and technical requirements.</p>
+                            </div>
+                            <div class="data-item rounded-lg p-4">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <span class="text-cyber-purple">Files</span>
+                                    <span class="text-gray-400 text-sm">Optional attachments</span>
+                                </div>
+                                <p class="text-gray-300 text-sm">Any documents, images, or specifications you upload with your order.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-semibold text-cyber-purple mb-3">Technical Data</h3>
+                        <div class="space-y-3">
+                            <div class="data-item rounded-lg p-4">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <span class="text-cyber-purple">IP Address</span>
+                                    <span class="text-gray-400 text-sm">Automatically collected</span>
+                                </div>
+                                <p class="text-gray-300 text-sm">Used for security, analytics, and to track unique visitors.</p>
+                            </div>
+                            <div class="data-item rounded-lg p-4">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <span class="text-cyber-purple">Browser Information</span>
+                                    <span class="text-gray-400 text-sm">Automatically collected</span>
+                                </div>
+                                <p class="text-gray-300 text-sm">Browser type, version, and operating system for compatibility.</p>
+                            </div>
+                            <div class="data-item rounded-lg p-4">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <span class="text-cyber-purple">Usage Data</span>
+                                    <span class="text-gray-400 text-sm">Automatically collected</span>
+                                </div>
+                                <p class="text-gray-300 text-sm">Pages visited, time spent, and interactions to improve our service.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How We Use Data -->
+            <div class="section-card rounded-2xl p-8 mb-8" data-aos="fade-up" data-aos-delay="200">
+                <h2 class="text-3xl font-bold font-cyber text-cyber-teal mb-4">How We Use Your Data</h2>
+                <div class="space-y-4">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-8 h-8 rounded-full bg-cyber-teal/20 border-2 border-cyber-teal flex-shrink-0 mt-1 flex items-center justify-center">
+                            <span class="text-cyber-teal text-sm font-bold">1</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-cyber-teal mb-2">Process Orders</h3>
+                            <p class="text-gray-300">
+                                We use your information to process project orders, communicate with you about your projects, 
+                                and deliver the services you request.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start space-x-4">
+                        <div class="w-8 h-8 rounded-full bg-cyber-teal/20 border-2 border-cyber-teal flex-shrink-0 mt-1 flex items-center justify-center">
+                            <span class="text-cyber-teal text-sm font-bold">2</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-cyber-teal mb-2">Improve Services</h3>
+                            <p class="text-gray-300">
+                                Usage data helps us understand how our website is used, identify areas for improvement, 
+                                and optimize user experience.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start space-x-4">
+                        <div class="w-8 h-8 rounded-full bg-cyber-teal/20 border-2 border-cyber-teal flex-shrink-0 mt-1 flex items-center justify-center">
+                            <span class="text-cyber-teal text-sm font-bold">3</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-cyber-teal mb-2">Security</h3>
+                            <p class="text-gray-300">
+                                IP addresses and technical data help us detect and prevent fraudulent activities, 
+                                protect our servers, and maintain service integrity.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start space-x-4">
+                        <div class="w-8 h-8 rounded-full bg-cyber-teal/20 border-2 border-cyber-teal flex-shrink-0 mt-1 flex items-center justify-center">
+                            <span class="text-cyber-teal text-sm font-bold">4</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-cyber-teal mb-2">Communication</h3>
+                            <p class="text-gray-300">
+                                We use your contact information to send project updates, invoices, 
+                                and important service announcements.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cookies Usage -->
+            <div class="section-card rounded-2xl p-8 mb-8" data-aos="fade-up" data-aos-delay="300">
+                <h2 class="text-3xl font-bold font-cyber text-cyber-pink mb-4">Cookies and Tracking</h2>
+                <div class="space-y-4">
+                    <p class="text-gray-300 leading-relaxed">
+                        We use cookies and similar tracking technologies to enhance your experience and track unique visitors:
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-800/50 rounded-lg p-4 border border-cyber-pink/30">
+                            <h4 class="font-semibold text-cyber-pink mb-2">Essential Cookies</h4>
+                            <p class="text-gray-400 text-sm">Required for basic website functionality and security</p>
+                        </div>
+                        <div class="bg-slate-800/50 rounded-lg p-4 border border-cyber-pink/30">
+                            <h4 class="font-semibold text-cyber-pink mb-2">Analytics Cookies</h4>
+                            <p class="text-gray-400 text-sm">Help us understand visitor behavior and improve our services</p>
+                        </div>
+                        <div class="bg-slate-800/50 rounded-lg p-4 border border-cyber-pink/30">
+                            <h4 class="font-semibold text-cyber-pink mb-2">Session Cookies</h4>
+                            <p class="text-gray-400 text-sm">Maintain your session and track form progress</p>
+                        </div>
+                        <div class="bg-slate-800/50 rounded-lg p-4 border border-cyber-pink/30">
+                            <h4 class="font-semibold text-cyber-pink mb-2">Security Cookies</h4>
+                            <p class="text-gray-400 text-sm">Protect against fraud and ensure secure access</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-cyber-pink/10 border border-cyber-pink/30 rounded-lg p-4">
+                        <p class="text-cyber-pink font-semibold mb-2">Important Note:</p>
+                        <p class="text-gray-300 text-sm">
+                            We use cookies to track unique visitors for analytics purposes. This helps us understand 
+                            how many people use our services and how we can improve them. You can control cookie settings 
+                            through your browser preferences.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Protection -->
+            <div class="section-card rounded-2xl p-8 mb-8" data-aos="fade-up" data-aos-delay="400">
+                <h2 class="text-3xl font-bold font-cyber text-cyber-cyan mb-4">Data Protection</h2>
+                <div class="space-y-4">
+                    <p class="text-gray-300 leading-relaxed">
+                        We implement industry-standard security measures to protect your data:
+                    </p>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-green-500">Secure</span>
+                            <span class="text-gray-300">SSL/TLS encryption for all data transmissions</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-green-500">Protected</span>
+                            <span class="text-gray-300">Secure database storage with access controls</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-green-500">Limited</span>
+                            <span class="text-gray-300">Access only to authorized personnel</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-green-500">Updated</span>
+                            <span class="text-gray-300">Regular security updates and monitoring</span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-gray-300 leading-relaxed">
+                        While we take reasonable measures to protect your data, no method of transmission over the internet 
+                        or electronic storage is 100% secure. We cannot guarantee absolute security.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Third-Party Sharing -->
+            <div class="section-card rounded-2xl p-8 mb-8" data-aos="fade-up" data-aos-delay="500">
+                <h2 class="text-3xl font-bold font-cyber text-cyber-purple mb-4">Third-Party Sharing</h2>
+                <div class="space-y-4">
+                    <p class="text-gray-300 leading-relaxed">
+                        We do not sell, trade, or otherwise transfer your personal information to third parties, except:
+                    </p>
+                    
+                    <ul class="list-disc list-inside text-gray-300 space-y-2 ml-4">
+                        <li><strong>Service Providers:</strong> Trusted third-party services that help us operate our business (payment processors, email services)</li>
+                        <li><strong>Legal Requirements:</strong> When required by law, court order, or government request</li>
+                        <li><strong>Business Transfer:</strong> In connection with a merger, acquisition, or sale of assets</li>
+                        <li><strong>Safety:</strong> To protect our rights, property, or safety, or that of our users or the public</li>
+                    </ul>
+                    
+                    <div class="bg-slate-800/50 rounded-lg p-4 border border-cyber-purple/30">
+                        <p class="text-cyber-purple font-semibold mb-2">Minimal Sharing Policy:</p>
+                        <p class="text-gray-300 text-sm">
+                            We only share data when absolutely necessary and ensure our partners maintain 
+                            appropriate privacy and security standards.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Rights -->
+            <div class="section-card rounded-2xl p-8 mb-8" data-aos="fade-up" data-aos-delay="600">
+                <h2 class="text-3xl font-bold font-cyber text-cyber-teal mb-4">Your Rights</h2>
+                <div class="space-y-4">
+                    <p class="text-gray-300 leading-relaxed">
+                        You have the following rights regarding your personal data:
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-800/50 rounded-lg p-4 border border-cyber-teal/30">
+                            <h4 class="font-semibold text-cyber-teal mb-2">Access</h4>
+                            <p class="text-gray-400 text-sm">Request a copy of your personal data</p>
+                        </div>
+                        <div class="bg-slate-800/50 rounded-lg p-4 border border-cyber-teal/30">
+                            <h4 class="font-semibold text-cyber-teal mb-2">Correction</h4>
+                            <p class="text-gray-400 text-sm">Update inaccurate or incomplete information</p>
+                        </div>
+                        <div class="bg-slate-800/50 rounded-lg p-4 border border-cyber-teal/30">
+                            <h4 class="font-semibold text-cyber-teal mb-2">Deletion</h4>
+                            <p class="text-gray-400 text-sm">Request removal of your personal data</p>
+                        </div>
+                        <div class="bg-slate-800/50 rounded-lg p-4 border border-cyber-teal/30">
+                            <h4 class="font-semibold text-cyber-teal mb-2">Portability</h4>
+                            <p class="text-gray-400 text-sm">Transfer your data to another service</p>
+                        </div>
+                    </div>
+                    
+                    <p class="text-gray-300 leading-relaxed">
+                        To exercise these rights, please contact us using the information below. 
+                        We will respond to your request within 30 days.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="section-card rounded-2xl p-8 mb-8" data-aos="fade-up" data-aos-delay="700">
+                <h2 class="text-3xl font-bold font-cyber text-cyber-pink mb-4">Contact Information</h2>
+                <div class="space-y-4">
+                    <p class="text-gray-300 leading-relaxed">
+                        If you have any questions about this Privacy Policy or want to exercise your data rights, please contact us:
+                    </p>
+                    
+                    <div class="bg-slate-800/50 rounded-lg p-6 border border-cyber-pink/30">
+                        <div class="space-y-3">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-cyber-pink">Privacy Email:</span>
+                                <a href="mailto:privacy@aymansolutions.com" class="text-cyber-cyan hover:text-cyber-teal transition-colors">
+                                    privacy@aymansolutions.com
+                                </a>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <span class="text-cyber-pink">Support Email:</span>
+                                <a href="mailto:support@aymansolutions.com" class="text-cyber-cyan hover:text-cyber-teal transition-colors">
+                                    support@aymansolutions.com
+                                </a>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <span class="text-cyber-pink">Website:</span>
+                                <a href="{{ url_for('main.home') }}" class="text-cyber-cyan hover:text-cyber-teal transition-colors">
+                                    www.aymansolutions.com
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Navigation -->
+            <div class="text-center mt-12" data-aos="fade-up">
+                <div class="flex justify-center space-x-6 mb-6">
+                    <a href="{{ url_for('main.terms') }}" class="px-6 py-3 border border-cyber-cyan text-cyber-cyan rounded-lg hover:bg-cyber-cyan hover:text-black transition-all duration-300">
+                        Terms of Service
+                    </a>
+                    <a href="{{ url_for('main.home') }}" class="px-6 py-3 bg-gradient-to-r from-cyber-cyan to-cyber-teal text-black font-bold rounded-lg hover:shadow-lg hover:shadow-cyber-cyan/50 transform hover:scale-105 transition-all duration-300">
+                        Back to Home
+                    </a>
+                </div>
+                <p class="text-gray-400 text-sm">
+                    © 2024 NEXAweb. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTop" class="scroll-to-top px-4 py-2 bg-cyber-cyan/20 border border-cyber-cyan text-cyber-cyan rounded-lg hover:bg-cyber-cyan hover:text-black transition-all duration-300">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+        </svg>
+    </button>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+
+        // Scroll to top functionality
+        const scrollToTopBtn = document.getElementById('scrollToTop');
+        
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                scrollToTopBtn.classList.add('visible');
+            } else {
+                scrollToTopBtn.classList.remove('visible');
+            }
+        });
+        
+        scrollToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
+</body>
+</html>

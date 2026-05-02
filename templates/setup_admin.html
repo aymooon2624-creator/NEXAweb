@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Setup - NEXAweb</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cyber-cyan': '#06b6d4',
+                        'cyber-teal': '#14b8a6',
+                        'cyber-purple': '#a855f7',
+                        'cyber-pink': '#ec4899',
+                        'deep-black': '#050505'
+                    },
+                    fontFamily: {
+                        'cyber': ['Orbitron', 'monospace'],
+                        'rajdhani': ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        @keyframes glitch {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-2px); }
+            40% { transform: translateX(2px); }
+            60% { transform: translateX(-1px); }
+            80% { transform: translateX(1px); }
+        }
+        
+        .cyber-grid {
+            background-image: 
+                linear-gradient(rgba(6, 182, 212, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6, 182, 212, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: grid-move 10s linear infinite;
+        }
+        
+        @keyframes grid-move {
+            0% { background-position: 0 0; }
+            100% { background-position: 50px 50px; }
+        }
+        
+        .glitch {
+            animation: glitch 2s infinite;
+        }
+        
+        .neon-glow {
+            text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+        }
+        
+        .cyber-input:focus {
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.5), inset 0 0 10px rgba(6, 182, 212, 0.1);
+        }
+        
+        .cyber-button {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .cyber-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.4), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .cyber-button:hover::before {
+            left: 100%;
+        }
+        
+        .cyber-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(6, 182, 212, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-deep-black text-white font-rajdhani overflow-x-hidden">
+    
+    <!-- Background Grid -->
+    <div class="fixed inset-0 cyber-grid opacity-20"></div>
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 backdrop-blur-lg bg-slate-950/80 border-b border-cyber-cyan/30">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold font-cyber bg-gradient-to-r from-cyber-cyan to-cyber-teal bg-clip-text text-transparent" data-aos="fade-right">
+                    NEXAweb
+                </div>
+                <div class="text-cyber-cyan text-sm" data-aos="fade-left">
+                    First-Run Setup
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="min-h-screen flex items-center justify-center pt-20 pb-20 relative z-10">
+        <div class="container mx-auto px-6 max-w-md">
+            
+            <!-- Setup Form -->
+            <div class="backdrop-blur-xl bg-slate-900/60 border-2 border-cyber-cyan/30 rounded-2xl p-8 shadow-2xl shadow-cyber-cyan/10" data-aos="fade-up">
+                
+                <!-- Header -->
+                <div class="text-center mb-8">
+                    <div class="text-6xl mb-4 glitch" data-aos="fade-down">
+                        <span class="text-cyber-cyan">Setup</span>
+                    </div>
+                    <h1 class="text-3xl font-bold font-cyber mb-2">
+                        <span class="bg-gradient-to-r from-cyber-cyan via-cyber-pink to-cyber-purple bg-clip-text text-transparent">
+                            Admin Account
+                        </span>
+                    </h1>
+                    <p class="text-gray-300 text-sm">
+                        Create your first administrator account
+                    </p>
+                </div>
+
+                
+                <!-- Form -->
+                <form method="POST" action="{{ url_for('auth.setup_admin') }}" class="space-y-6">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <!-- Username -->
+                    <div class="form-group" data-aos="fade-up" data-aos-delay="100">
+                        <label for="username" class="block text-cyber-cyan font-semibold mb-2">
+                            Username
+                        </label>
+                        <input type="text" 
+                               id="username" 
+                               name="username" 
+                               required
+                               class="w-full px-4 py-3 bg-slate-800/50 border border-cyber-cyan/30 rounded-lg text-white placeholder-gray-400 focus:border-cyber-cyan focus:outline-none transition-colors cyber-input"
+                               placeholder="Choose admin username">
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-group" data-aos="fade-up" data-aos-delay="200">
+                        <label for="password" class="block text-cyber-cyan font-semibold mb-2">
+                            Password
+                        </label>
+                        <input type="password" 
+                               id="password" 
+                               name="password" 
+                               required
+                               minlength="8"
+                               class="w-full px-4 py-3 bg-slate-800/50 border border-cyber-cyan/30 rounded-lg text-white placeholder-gray-400 focus:border-cyber-cyan focus:outline-none transition-colors cyber-input"
+                               placeholder="Minimum 8 characters">
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="form-group" data-aos="fade-up" data-aos-delay="300">
+                        <label for="confirm_password" class="block text-cyber-cyan font-semibold mb-2">
+                            Confirm Password
+                        </label>
+                        <input type="password" 
+                               id="confirm_password" 
+                               name="confirm_password" 
+                               required
+                               minlength="8"
+                               class="w-full px-4 py-3 bg-slate-800/50 border border-cyber-cyan/30 rounded-lg text-white placeholder-gray-400 focus:border-cyber-cyan focus:outline-none transition-colors cyber-input"
+                               placeholder="Re-enter password">
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="pt-4" data-aos="fade-up" data-aos-delay="400">
+                        <button type="submit" 
+                                class="w-full cyber-button px-6 py-3 bg-gradient-to-r from-cyber-cyan to-cyber-teal text-black font-bold rounded-lg hover:shadow-lg hover:shadow-cyber-cyan/50 transform hover:scale-105 transition-all duration-300">
+                            <span class="relative z-10">Create Admin Account</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Security Notice -->
+                <div class="mt-6 p-4 bg-cyber-cyan/10 border border-cyber-cyan/30 rounded-lg" data-aos="fade-up" data-aos-delay="500">
+                    <div class="flex items-start space-x-2">
+                        <div class="text-cyber-cyan mt-1">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div class="text-xs text-gray-300">
+                            <p class="font-semibold text-cyber-cyan mb-1">Security Notice</p>
+                            <p>This setup page is only accessible when no admin account exists. After creating your admin account, this page will be automatically disabled for security.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+
+        // Password confirmation validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirm_password');
+
+            form.addEventListener('submit', function(e) {
+                if (password.value !== confirmPassword.value) {
+                    e.preventDefault();
+                    
+                    // Create error message
+                    const existingError = document.querySelector('.password-error');
+                    if (existingError) {
+                        existingError.remove();
+                    }
+                    
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'password-error mt-2 p-3 bg-red-900/50 border border-red-500/50 rounded-lg text-red-300 text-sm';
+                    errorDiv.textContent = 'Passwords do not match.';
+                    
+                    confirmPassword.parentNode.appendChild(errorDiv);
+                    
+                    // Remove error after 5 seconds
+                    setTimeout(() => {
+                        errorDiv.remove();
+                    }, 5000);
+                }
+            });
+
+            // Real-time password strength indicator
+            password.addEventListener('input', function() {
+                const strength = calculatePasswordStrength(this.value);
+                updateStrengthIndicator(strength);
+            });
+        });
+
+        function calculatePasswordStrength(password) {
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (password.length >= 12) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[^a-zA-Z\d]/.test(password)) strength++;
+            return strength;
+        }
+
+        function updateStrengthIndicator(strength) {
+            const indicator = document.getElementById('strength-indicator');
+            if (!indicator) return;
+
+            const colors = ['text-red-500', 'text-yellow-500', 'text-cyber-cyan', 'text-cyber-teal'];
+            const texts = ['Weak', 'Fair', 'Good', 'Strong'];
+            
+            indicator.className = `text-xs mt-1 ${colors[strength - 1] || colors[0]}`;
+            indicator.textContent = texts[strength - 1] || '';
+        }
+
+        // Glitch effect for title
+        document.addEventListener('DOMContentLoaded', function() {
+            const glitchElement = document.querySelector('.glitch');
+            if (glitchElement) {
+                glitchElement.addEventListener('mouseenter', function() {
+                    this.style.animation = 'glitch 0.3s ease-in-out';
+                    setTimeout(() => {
+                        this.style.animation = '';
+                    }, 300);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

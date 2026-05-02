@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - NEXAweb</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cyber-cyan': '#06b6d4',
+                        'cyber-teal': '#14b8a6',
+                        'cyber-purple': '#a855f7',
+                        'cyber-pink': '#ec4899',
+                        'deep-black': '#050505'
+                    },
+                    fontFamily: {
+                        'cyber': ['Orbitron', 'monospace'],
+                        'rajdhani': ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .cyber-grid {
+            background-image: 
+                linear-gradient(rgba(6, 182, 212, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6, 182, 212, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: grid-move 10s linear infinite;
+        }
+        
+        @keyframes grid-move {
+            0% { background-position: 0 0; }
+            100% { background-position: 50px 50px; }
+        }
+        
+        .section-card {
+            backdrop-filter: blur(20px);
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+        }
+        
+        .section-card:hover {
+            border-color: rgba(6, 182, 212, 0.4);
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.1);
+        }
+        
+        .neon-text {
+            text-shadow: 0 0 10px currentColor;
+        }
+        
+        .scroll-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .scroll-to-top.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-deep-black text-white font-rajdhani">
+    
+    <!-- Background Grid -->
+    <div class="fixed inset-0 cyber-grid opacity-10"></div>
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 backdrop-blur-lg bg-slate-950/80 border-b border-cyber-cyan/30">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold font-cyber bg-gradient-to-r from-cyber-cyan to-cyber-teal bg-clip-text text-transparent">
+                    NEXAweb
+                </div>
+                <div class="flex items-center space-x-6">
+                    <a href="{{ url_for('main.home') }}" class="hover:text-cyber-cyan transition-colors duration-300">
+                        Home
+                    </a>
+                    <a href="{{ url_for('main.privacy') }}" class="hover:text-cyber-cyan transition-colors duration-300">
+                        Privacy Policy
+                    </a>
+                    <a href="{{ url_for('orders.order_form') }}" class="px-4 py-2 border border-cyber-cyan text-cyber-cyan rounded-lg hover:bg-cyber-cyan hover:text-black transition-all duration-300">
+                        Submit Order
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="min-h-screen pt-20 pb-20 relative z-10">
+        <div class="container mx-auto px-6 max-w-4xl">
+            
+            <!-- Header -->
+            <div class="text-center mb-12" data-aos="fade-down">
+                <h1 class="text-5xl md:text-6xl font-bold font-cyber mb-4">
+                    <span class="bg-gradient-to-r from-cyber-cyan via-cyber-pink to-cyber-purple bg-clip-text text-transparent neon-text">
+                        Terms of Service
+                    </span>
+                </h1>
+                <p class="text-xl text-gray-300 mb-2">
+                    Last updated: {{ moment().format('MMMM D, YYYY') if moment else 'December 2024' }}
+                </p>
+                <p class="text-gray-400">
+                    Please read these terms carefully before using our services
+                </p>
+            </div>
+
+            <!-- Introduction -->
+            <div class="section-card rounded-2xl p-8 mb-8" data-aos="fade-up">
+                <h2 class="text-3xl font-bold font-cyber text-cyber-cyan mb-4">Welcome to NEXAweb</h2>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    NEXAweb is a professional freelance service platform that connects clients with quality development solutions. 
+                    We specialize in web development, mobile applications, and custom software solutions tailored to your business needs.
+                </p>
+                <p class="text-gray-300 leading-relaxed">
+                    By using our website and submitting project orders, you agree to these Terms of Service. 
+                    If you don't agree with these terms, please do not use our services.
+                </p>
+            </div>
+
+            <!-- User Responsibilities -->
+            <div class="section-card rounded-2xl p-8 mb-8" data-aos="fade-up" data-aos-delay="100">
+                <h2 class="text-3xl font-bold font-cyber text-cyber-purple mb-4">User Responsibilities</h2>
+                <div class="space-y-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-6 h-6 rounded-full bg-cyber-purple/20 border-2 border-cyber-purple flex-shrink-0 mt-1"></div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-cyber-purple mb-2">Accurate Information</h3>
+                            <p class="text-gray-300">
+                                You must provide accurate, complete, and current information when submitting project orders. 
+                                This includes your name, email address, phone number, and project details.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start space-x-3">
+                        <div class="w-6 h-6 rounded-full bg-cyber-purple/20 border-2 border-cyber-purple flex-shrink-0 mt-1"></div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-cyber-purple mb-2">No Abuse of Services</h3>
+                            <p class="text-gray-300">
+                                You agree not to use our services for any illegal, harmful, or malicious purposes. 
+                                This includes submitting fraudulent orders, spam, or any content that violates applicable laws.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start space-x-3">
+                        <div class="w-6 h-6 rounded-full bg-cyber-purple/20 border-2 border-cyber-purple flex-shrink-0 mt-1"></div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-cyber-purple mb-2">Professional Conduct</h3>
+                            <p class="text-gray-300">
+                                All communications with our team should be professional and respectful. 
+                                We reserve the right to refuse service to anyone who engages in abusive or inappropriate behavior.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service Description -->
+            <div class="section-card rounded-2xl p-8 mb-8" data-aos="fade-up" data-aos-delay="200">
+                <h2 class="text-3xl font-bold font-cyber text-cyber-teal mb-4">Service Description</h2>
+                <div class="space-y-4">
+                    <p class="text-gray-300 leading-relaxed">
+                        NEXAweb provides the following services through our platform:
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-800/50 rounded-lg p-4 border border-cyber-teal/30">
+                            <h4 class="font-semibold text-cyber-teal mb-2">Web Development</h4>
+                            <p class="text-gray-400 text-sm">Custom websites, web applications, and e-commerce solutions</p>
+                        </div>
+                        <div class="bg-slate-800/50 rounded-lg p-4 border border-cyber-teal/30">
+                            <h4 class="font-semibold text-cyber-teal mb-2">Mobile Applications</h4>
+                            <p class="text-gray-400 text-sm">iOS and Android app development with modern frameworks</p>
+                        </div>
+                        <div class="bg-slate-800/50 rounded-lg p-4 border border-cyber-teal/30">
+                            <h4 class="font-semibold text-cyber-teal mb-2">Custom Software</h4>
+                            <p class="text-gray-400 text-sm">Tailored software solutions for specific business needs</p>
+                        </div>
+                        <div class="bg-slate-800/50 rounded-lg p-4 border border-cyber-teal/30">
+                            <h4 class="font-semibold text-cyber-teal mb-2">Consulting</h4>
+                            <p class="text-gray-400 text-sm">Technical consulting and project guidance</p>
+                        </div>
+                    </div>
+                    
+                    <p class="text-gray-300 leading-relaxed mt-4">
+                        Project orders are processed based on availability and project requirements. 
+                        We reserve the right to accept or decline any project order at our discretion.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Payment Terms -->
+            <div class="section-card rounded-2xl p-8 mb-8" data-aos="fade-up" data-aos-delay="300">
+                <h2 class="text-3xl font-bold font-cyber text-cyber-pink mb-4">Payment Terms</h2>
+                <div class="space-y-4">
+                    <p class="text-gray-300 leading-relaxed">
+                        Payment terms are determined on a per-project basis and will be clearly outlined in your project proposal:
+                    </p>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-cyber-pink">50%</span>
+                            <span class="text-gray-400">Deposit required to begin project work</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-cyber-pink">50%</span>
+                            <span class="text-gray-400">Final payment upon project completion</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-cyber-pink">Flexible</span>
+                            <span class="text-gray-400">Payment plans available for larger projects</span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-gray-300 leading-relaxed">
+                        All payments are processed securely through our payment partners. 
+                        Prices are quoted in USD and are subject to change based on project scope modifications.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Limitation of Liability -->
+            <div class="section-card rounded-2xl p-8 mb-8" data-aos="fade-up" data-aos-delay="400">
+                <h2 class="text-3xl font-bold font-cyber text-cyber-cyan mb-4">Limitation of Liability</h2>
+                <div class="space-y-4">
+                    <p class="text-gray-300 leading-relaxed">
+                        NEXAweb shall not be liable for any indirect, incidental, special, consequential, or punitive damages 
+                        arising out of or relating to your use of our services.
+                    </p>
+                    
+                    <p class="text-gray-300 leading-relaxed">
+                        Our total liability for any claims arising from or relating to our services shall not exceed the amount 
+                        you paid for the specific service in question.
+                    </p>
+                    
+                    <p class="text-gray-300 leading-relaxed">
+                        We do not guarantee uninterrupted or error-free operation of our website and services. 
+                        We are not responsible for any delays, failures, or interruptions in service.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right to Refuse -->
+            <div class="section-card rounded-2xl p-8 mb-8" data-aos="fade-up" data-aos-delay="500">
+                <h2 class="text-3xl font-bold font-cyber text-cyber-purple mb-4">Right to Refuse or Cancel Orders</h2>
+                <div class="space-y-4">
+                    <p class="text-gray-300 leading-relaxed">
+                        We reserve the right to refuse or cancel any project order for any reason, including but not limited to:
+                    </p>
+                    
+                    <ul class="list-disc list-inside text-gray-300 space-y-2 ml-4">
+                        <li>Requests that violate applicable laws or regulations</li>
+                        <li>Projects beyond our current capacity or expertise</li>
+                        <li>Incomplete or inaccurate project information</li>
+                        <li>Client history of non-payment or abusive behavior</li>
+                        <li>Technical feasibility concerns</li>
+                    </ul>
+                    
+                    <p class="text-gray-300 leading-relaxed">
+                        If we cancel an order, any payments made will be refunded in full within 5-7 business days.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Changes to Terms -->
+            <div class="section-card rounded-2xl p-8 mb-8" data-aos="fade-up" data-aos-delay="600">
+                <h2 class="text-3xl font-bold font-cyber text-cyber-teal mb-4">Changes to Terms</h2>
+                <div class="space-y-4">
+                    <p class="text-gray-300 leading-relaxed">
+                        We reserve the right to modify these Terms of Service at any time. 
+                        Changes will be effective immediately upon posting on our website.
+                    </p>
+                    
+                    <p class="text-gray-300 leading-relaxed">
+                        Your continued use of our services after any changes constitutes acceptance of the modified terms. 
+                        We will notify users of significant changes via email or website notices.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="section-card rounded-2xl p-8 mb-8" data-aos="fade-up" data-aos-delay="700">
+                <h2 class="text-3xl font-bold font-cyber text-cyber-pink mb-4">Contact Information</h2>
+                <div class="space-y-4">
+                    <p class="text-gray-300 leading-relaxed">
+                        If you have any questions about these Terms of Service, please contact us:
+                    </p>
+                    
+                    <div class="bg-slate-800/50 rounded-lg p-6 border border-cyber-pink/30">
+                        <div class="space-y-3">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-cyber-pink">Email:</span>
+                                <a href="mailto:support@aymansolutions.com" class="text-cyber-cyan hover:text-cyber-teal transition-colors">
+                                    support@aymansolutions.com
+                                </a>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <span class="text-cyber-pink">Website:</span>
+                                <a href="{{ url_for('main.home') }}" class="text-cyber-cyan hover:text-cyber-teal transition-colors">
+                                    www.aymansolutions.com
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Navigation -->
+            <div class="text-center mt-12" data-aos="fade-up">
+                <div class="flex justify-center space-x-6 mb-6">
+                    <a href="{{ url_for('main.privacy') }}" class="px-6 py-3 border border-cyber-cyan text-cyber-cyan rounded-lg hover:bg-cyber-cyan hover:text-black transition-all duration-300">
+                        Privacy Policy
+                    </a>
+                    <a href="{{ url_for('main.home') }}" class="px-6 py-3 bg-gradient-to-r from-cyber-cyan to-cyber-teal text-black font-bold rounded-lg hover:shadow-lg hover:shadow-cyber-cyan/50 transform hover:scale-105 transition-all duration-300">
+                        Back to Home
+                    </a>
+                </div>
+                <p class="text-gray-400 text-sm">
+                    © 2024 NEXAweb. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTop" class="scroll-to-top px-4 py-2 bg-cyber-cyan/20 border border-cyber-cyan text-cyber-cyan rounded-lg hover:bg-cyber-cyan hover:text-black transition-all duration-300">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+        </svg>
+    </button>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+
+        // Scroll to top functionality
+        const scrollToTopBtn = document.getElementById('scrollToTop');
+        
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                scrollToTopBtn.classList.add('visible');
+            } else {
+                scrollToTopBtn.classList.remove('visible');
+            }
+        });
+        
+        scrollToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
+</body>
+</html>
