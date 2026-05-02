@@ -531,6 +531,7 @@ def update_order_amounts():
 
 
 @admin_bp.route('/auto_update_order_amounts', methods=['POST'])
+@admin_bp.route('/update_order_amounts', methods=['POST'])
 @login_required
 def auto_update_order_amounts():
     """Auto-update order amounts immediately without page refresh"""
