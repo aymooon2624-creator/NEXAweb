@@ -146,6 +146,7 @@ def submit_order():
             project_type=project_type,
             details=details,
             tracking_code=tracking_code,
+            original_filename=tracking_code,  # Set original_filename to tracking_code
             total_price=total_price,
             deposit_amount=deposit_amount
         )
