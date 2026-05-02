@@ -9,10 +9,14 @@ import os
 import re
 import html
 import bleach
+import logging
 from datetime import datetime
 from models import Order, Testimonial, generate_tracking_code
 from database import get_mongo
 from telegram_notifications import send_new_order_notification
+
+# Configure logger
+logger = logging.getLogger(__name__)
 
 orders_bp = Blueprint('orders', __name__)
 
@@ -170,7 +174,6 @@ def submit_order():
             details=details,
             tracking_code=tracking_code,
             original_filename=tracking_code,  # Set original_filename to tracking_code
-            image_path=image_path,
             total_price=total_price,
             deposit_amount=deposit_amount
         )
