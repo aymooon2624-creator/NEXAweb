@@ -82,9 +82,18 @@ def send_payment_notification(customer_name, tracking_code, amount, payment_type
     TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
     CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
     
+    logger.info(f"=== send_payment_notification called ===")
+    logger.info(f"TELEGRAM_TOKEN exists: {bool(TELEGRAM_TOKEN)}")
+    logger.info(f"CHAT_ID exists: {bool(CHAT_ID)}")
+    logger.info(f"Customer: {customer_name}, Tracking: {tracking_code}, Amount: {amount}")
+    logger.info(f"Payment type: {payment_type}")
+    logger.info(f"Transaction ID: {transaction_id}")
+    
     # Validate required environment variables
-    if not TELEGRAM_BOT_TOKEN or not CHAT_ID:
-        logger.error("Telegram configuration missing - check environment variables")
+    if not TELEGRAM_TOKEN or not CHAT_ID:
+        logger.error("❌ Telegram configuration missing - check environment variables")
+        logger.error(f"TELEGRAM_TOKEN: {TELEGRAM_TOKEN}")
+        logger.error(f"CHAT_ID: {CHAT_ID}")
         return False
     
     # Determine payment type text in Arabic
@@ -116,15 +125,22 @@ def send_payment_notification(customer_name, tracking_code, amount, payment_type
     }
     
     try:
+        logger.info(f"Sending to URL: {url}")
+        logger.info(f"Payload: {payload}")
+        
         response = requests.post(url, json=payload, timeout=10)
+        logger.info(f"Response status: {response.status_code}")
+        logger.info(f"Response body: {response.text}")
+        
         if response.status_code == 200:
-            logger.info("Telegram payment notification sent successfully")
+            logger.info("✅ Telegram payment notification sent successfully")
             return True
         else:
-            logger.error(f"Failed to send Telegram notification: {response.status_code}")
+            logger.error(f"❌ Failed to send Telegram notification: {response.status_code}")
+            logger.error(f"Response: {response.text}")
             return False
     except Exception as e:
-        logger.error(f"Error sending Telegram notification: {str(e)}")
+        logger.error(f"❌ Error sending Telegram notification: {str(e)}")
         return False
 
 def send_telegram_photo(photo_file=None, photo_path=None, filename=None, caption=""):
@@ -134,22 +150,33 @@ def send_telegram_photo(photo_file=None, photo_path=None, filename=None, caption
     TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
     CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
     
+    logger.info(f"=== send_telegram_photo called ===")
+    logger.info(f"TELEGRAM_TOKEN exists: {bool(TELEGRAM_TOKEN)}")
+    logger.info(f"CHAT_ID exists: {bool(CHAT_ID)}")
+    logger.info(f"Filename: {filename}")
+    logger.info(f"Caption length: {len(caption)}")
+    
     if not TELEGRAM_TOKEN or not CHAT_ID:
-        logger.error("Telegram credentials not configured")
+        logger.error("❌ Telegram credentials not configured")
+        logger.error(f"TELEGRAM_TOKEN: {TELEGRAM_TOKEN}")
+        logger.error(f"CHAT_ID: {CHAT_ID}")
         return False
     
     try:
         # Send photo to Telegram
         url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendPhoto"
+        logger.info(f"Sending photo to URL: {url}")
         
         if photo_file:
             # Send from file object (in memory)
             files = {'photo': (filename, photo_file, 'image/jpeg')}
+            logger.info("Using file object (in memory)")
         elif photo_path:
             # Send from file path
             files = {'photo': open(photo_path, 'rb')}
+            logger.info(f"Using file path: {photo_path}")
         else:
-            logger.error("No photo file or path provided")
+            logger.error("❌ No photo file or path provided")
             return False
             
         data = {
@@ -158,17 +185,22 @@ def send_telegram_photo(photo_file=None, photo_path=None, filename=None, caption
             'parse_mode': 'HTML'
         }
         
+        logger.info(f"Photo data: chat_id={CHAT_ID}, caption_length={len(caption)}")
+        
         response = requests.post(url, files=files, data=data, timeout=10)
+        logger.info(f"Photo response status: {response.status_code}")
+        logger.info(f"Photo response body: {response.text}")
         
         if response.status_code == 200:
-            logger.info("Telegram photo sent successfully")
+            logger.info("✅ Telegram photo sent successfully")
             return True
         else:
-            logger.error(f"Failed to send Telegram photo: {response.status_code}")
+            logger.error(f"❌ Failed to send Telegram photo: {response.status_code}")
+            logger.error(f"Response: {response.text}")
             return False
             
     except Exception as e:
-        logger.error(f"Error sending Telegram photo: {str(e)}")
+        logger.error(f"❌ Error sending Telegram photo: {str(e)}")
         return False
 
 def send_telegram_document(content, filename, caption=""):
