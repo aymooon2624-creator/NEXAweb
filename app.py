@@ -127,7 +127,7 @@ def send_payment_notification(customer_name, tracking_code, amount, payment_type
         logger.error(f"Error sending Telegram notification: {str(e)}")
         return False
 
-def send_telegram_photo(photo_path, caption):
+def send_telegram_photo(photo_file=None, photo_path=None, filename=None, caption=""):
     """Send photo to Telegram"""
     
     # Get Telegram credentials from environment
@@ -142,16 +142,24 @@ def send_telegram_photo(photo_path, caption):
         # Send photo to Telegram
         url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendPhoto"
         
-        with open(photo_path, 'rb') as photo:
-            files = {'photo': photo}
-            data = {
-                'chat_id': CHAT_ID,
-                'caption': caption,
-                'parse_mode': 'HTML'
-            }
+        if photo_file:
+            # Send from file object (in memory)
+            files = {'photo': (filename, photo_file, 'image/jpeg')}
+        elif photo_path:
+            # Send from file path
+            files = {'photo': open(photo_path, 'rb')}
+        else:
+            logger.error("No photo file or path provided")
+            return False
             
-            response = requests.post(url, files=files, data=data, timeout=10)
-            
+        data = {
+            'chat_id': CHAT_ID,
+            'caption': caption,
+            'parse_mode': 'HTML'
+        }
+        
+        response = requests.post(url, files=files, data=data, timeout=10)
+        
         if response.status_code == 200:
             logger.info("Telegram photo sent successfully")
             return True
@@ -161,6 +169,46 @@ def send_telegram_photo(photo_path, caption):
             
     except Exception as e:
         logger.error(f"Error sending Telegram photo: {str(e)}")
+        return False
+
+def send_telegram_document(content, filename, caption=""):
+    """Send document to Telegram"""
+    
+    # Get Telegram credentials from environment
+    TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+    CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+    
+    if not TELEGRAM_TOKEN or not CHAT_ID:
+        logger.error("Telegram credentials not configured")
+        return False
+    
+    try:
+        # Send document to Telegram
+        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendDocument"
+        
+        from io import BytesIO
+        document_bytes = BytesIO(content.encode('utf-8'))
+        
+        files = {
+            'document': (filename, document_bytes, 'text/plain')
+        }
+        data = {
+            'chat_id': CHAT_ID,
+            'caption': caption,
+            'parse_mode': 'HTML'
+        }
+        
+        response = requests.post(url, files=files, data=data, timeout=10)
+        
+        if response.status_code == 200:
+            logger.info("Telegram document sent successfully")
+            return True
+        else:
+            logger.error(f"Failed to send Telegram document: {response.status_code}")
+            return False
+            
+    except Exception as e:
+        logger.error(f"Error sending Telegram document: {str(e)}")
         return False
 
 def create_app():

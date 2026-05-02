@@ -139,7 +139,7 @@ def submit_order():
         print(f"🔢 Generated tracking code: {tracking_code}")
         
         # Handle optional image upload
-        image_path = None
+        image_file = None
         image_filename = None
         
         if 'image' in request.files:
@@ -151,21 +151,10 @@ def submit_order():
                         flash('Invalid image format. Allowed: JPG, JPEG, PNG, GIF', 'error')
                         return redirect(url_for('orders.order_form'))
                     
-                    # Secure filename
-                    filename = secure_filename(image.filename)
-                    
-                    # Create project_images directory
-                    project_images_dir = os.path.join(os.getcwd(), 'project_images')
-                    os.makedirs(project_images_dir, exist_ok=True)
-                    
-                    # Save image with tracking code as filename
+                    # Store image in memory for Telegram
+                    image_file = image
                     image_filename = f"{tracking_code}.jpg"
-                    image_path = os.path.join('project_images', image_filename).replace('\\', '/')
-                    full_image_path = os.path.join(project_images_dir, image_filename)
-                    
-                    image.save(full_image_path)
-                    print(f"🖼️ Image uploaded successfully: {full_image_path}")
-                    print(f"📁 Image stored in: project_images/{image_filename}")
+                    print(f"🖼️ Image prepared for Telegram: {image_filename}")
                     
                 except Exception as e:
                     print(f"❌ Error processing image upload: {e}")
@@ -189,40 +178,71 @@ def submit_order():
         if order_id:
             print(f"✅ Order created successfully with ID: {order_id}")
             
-            # Save project details to text file
-            try:
-                project_details_dir = os.path.join(os.getcwd(), 'project_details')
-                os.makedirs(project_details_dir, exist_ok=True)
-                
-                details_filename = f"{tracking_code}.txt"
-                details_filepath = os.path.join(project_details_dir, details_filename)
-                
-                with open(details_filepath, 'w', encoding='utf-8') as f:
-                    f.write(f"Project Details - Tracking Code: {tracking_code}\n")
-                    f.write(f"{"="*50}\n\n")
-                    f.write(f"Customer Name: {name}\n")
-                    f.write(f"Email: {email}\n")
-                    f.write(f"Phone: {phone}\n")
-                    f.write(f"Project Type: {project_type}\n")
-                    f.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
-                    f.write(f"Project Details:\n")
-                    f.write(f"{"-"*20}\n")
-                    f.write(f"{details}\n\n")
-                    f.write(f"Pricing:\n")
-                    f.write(f"Total Price: ${total_price}\n")
-                    f.write(f"Deposit Amount: ${deposit_amount}\n")
-                    f.write(f"Remaining Amount: ${total_price - deposit_amount}\n")
-                
-                print(f"📄 Project details saved: {details_filepath}")
-            except Exception as e:
-                print(f"❌ Error saving project details: {e}")
+            # Create project details content in memory
+            project_details_content = f"""Project Details - Tracking Code: {tracking_code}
+{"="*50}
+
+Customer Name: {name}
+Email: {email}
+Phone: {phone}
+Project Type: {project_type}
+Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+Project Details:
+{"-"*20}
+{details}
+
+Pricing:
+Total Price: ${total_price}
+Deposit Amount: ${deposit_amount}
+Remaining Amount: ${total_price - deposit_amount}
+"""
+            
+            print(f"📄 Project details prepared for Telegram: {tracking_code}.txt")
             
             # Store tracking code in session for backup
             session['last_tracking_code'] = tracking_code
             
-            # Send Telegram notification
-            print("📱 Sending Telegram notification...")
+            # Send Telegram notification with project details as document
+            print("📱 Sending Telegram notification with project details...")
             
+            try:
+                from app import send_telegram_document
+                
+                # Send project details as document
+                doc_success = send_telegram_document(
+                    content=project_details_content,
+                    filename=f"{tracking_code}.txt",
+                    caption=f"📄 Project Details for Order {tracking_code}\n\nCustomer: {name}\nProject: {project_type}"
+                )
+                
+                if doc_success:
+                    print("✅ Project details sent successfully")
+                else:
+                    print("❌ Failed to send project details")
+                    
+            except Exception as e:
+                print(f"❌ Error sending project details: {e}")
+            
+            # Send image notification if image was uploaded
+            if image_file:
+                print("🖼️ Sending image notification to Telegram...")
+                try:
+                    from app import send_telegram_photo
+                    photo_success = send_telegram_photo(
+                        photo_file=image_file,
+                        filename=image_filename,
+                        caption=f"📸 Project Image for Order {tracking_code}\n\nCustomer: {name}\nProject: {project_type}"
+                    )
+                    if photo_success:
+                        print("✅ Image notification sent successfully")
+                    else:
+                        print("❌ Failed to send image notification")
+                except Exception as e:
+                    print(f"❌ Error sending image notification: {e}")
+            
+            # Send basic text notification as backup
+            print("📱 Sending basic Telegram notification...")
             order_data = {
                 'name': name,
                 'email': email,
@@ -236,27 +256,11 @@ def submit_order():
                 from utils.notifications import notify_new_order
                 telegram_success = notify_new_order(order_data)
                 if telegram_success:
-                    print("✅ Telegram notification sent successfully")
+                    print("✅ Basic Telegram notification sent successfully")
                 else:
-                    print("❌ Failed to send Telegram notification")
+                    print("❌ Failed to send basic Telegram notification")
             except Exception as e:
-                print(f"❌ Error creating new order notification: {e}")
-            
-            # Send image notification if image was uploaded
-            if image_path:
-                print("🖼️ Sending image notification to Telegram...")
-                try:
-                    from app import send_telegram_photo
-                    photo_success = send_telegram_photo(
-                        photo_path=image_path,
-                        caption=f"📸 Project Image for Order {tracking_code}\n\nCustomer: {name}\nProject: {project_type}"
-                    )
-                    if photo_success:
-                        print("✅ Image notification sent successfully")
-                    else:
-                        print("❌ Failed to send image notification")
-                except Exception as e:
-                    print(f"❌ Error sending image notification: {e}")
+                print(f"❌ Error creating basic notification: {e}")
             
             flash('Order submitted successfully! Your tracking code is: ' + tracking_code, 'success')
             return redirect(url_for('orders.success_page', tracking_code=tracking_code))
