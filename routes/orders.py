@@ -197,6 +197,17 @@ def submit_order():
         if order_id:
             print(f"✅ Order created successfully with ID: {order_id}")
             
+            # Send order confirmation email to customer
+            try:
+                from app import send_order_confirmation_email
+                email_sent = send_order_confirmation_email(email, name)
+                if email_sent:
+                    print(f"✅ Order confirmation email sent to {email}")
+                else:
+                    print(f"❌ Failed to send order confirmation email to {email}")
+            except Exception as email_error:
+                print(f"❌ Error sending order confirmation email: {email_error}")
+            
             # Create temporary text file for project details
             temp_dir = os.path.join(os.getcwd(), 'temp')
             os.makedirs(temp_dir, exist_ok=True)

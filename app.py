@@ -55,6 +55,13 @@ app.config['PREFERRED_URL_SCHEME'] = 'https'  # Updated for Render deployment
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
+# Email configuration
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'true').lower() == 'true'
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+
 # Babel configuration for internationalization
 app.config['LANGUAGES'] = ['en', 'ar']
 app.config['BABEL_DEFAULT_LOCALE'] = 'en'
@@ -205,6 +212,141 @@ def send_tailored_payment_notification(customer_name, tracking_code, amount, pay
                 
     except Exception as e:
         logger.error(f"❌ Error sending Telegram notification: {str(e)}")
+        return False
+
+def send_order_confirmation_email(customer_email, customer_name):
+    """Send order confirmation email to customer"""
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.base import MIMEBase
+    from email import encoders
+    
+    logger.info(f"=== send_order_confirmation_email called ===")
+    logger.info(f"Customer: {customer_name}, Email: {customer_email}")
+    
+    # Validate required environment variables
+    if not all([app.config.get('MAIL_SERVER'), app.config.get('MAIL_USERNAME'), app.config.get('MAIL_PASSWORD')]):
+        logger.error("❌ Email configuration missing - check environment variables")
+        return False
+    
+    # Create HTML email template
+    html_body = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Order Confirmation - NEXAweb</title>
+        <style>
+            body {{
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #f8f9fa;
+            }}
+            .container {{
+                background-color: #ffffff;
+                padding: 30px;
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                border-left: 5px solid #00d4aa;
+            }}
+            .header {{
+                text-align: center;
+                margin-bottom: 30px;
+                padding-bottom: 20px;
+                border-bottom: 2px solid #e9ecef;
+            }}
+            .logo {{
+                font-size: 28px;
+                font-weight: bold;
+                color: #00d4aa;
+                text-decoration: none;
+                margin-bottom: 10px;
+            }}
+            .content {{
+                margin-bottom: 30px;
+            }}
+            .footer {{
+                text-align: center;
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 2px solid #e9ecef;
+                color: #6c757d;
+                font-size: 14px;
+            }}
+            .highlight {{
+                background-color: #e8f5f0;
+                padding: 15px;
+                border-radius: 5px;
+                margin: 20px 0;
+                border-left: 4px solid #00d4aa;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <a href="#" class="logo">NEXAweb</a>
+                <p style="color: #6c757d; margin: 10px 0 0 0;">Professional Web & Mobile Development</p>
+            </div>
+            
+            <div class="content">
+                <h2 style="color: #00d4aa; margin-bottom: 20px;">Order Received Successfully!</h2>
+                
+                <p>Dear <strong>{customer_name}</strong>,</p>
+                
+                <p>We are pleased to inform you that we have successfully received your order. Our team is currently reviewing the details, and we will get back to you shortly with the total project cost and required deposit amount.</p>
+                
+                <div class="highlight">
+                    <p><strong>Please note:</strong> Once payment is completed, we will immediately begin working on your project.</p>
+                </div>
+                
+                <p>Thank you for choosing <strong style="color: #00d4aa;">NEXAweb</strong>. We look forward to working with you!</p>
+            </div>
+            
+            <div class="footer">
+                <p><strong>Best regards,<br>
+                NEXAweb Team</strong></p>
+                <p style="margin-top: 15px; font-size: 12px;">
+                    This is an automated message. Please do not reply to this email.
+                </p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    try:
+        # Create email message
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = 'Order Received Successfully - NEXAweb'
+        msg['From'] = f"NEXAweb Team <{app.config['MAIL_USERNAME']}>"
+        msg['To'] = customer_email
+        
+        # Attach HTML part
+        html_part = MIMEText(html_body, 'html', 'utf-8')
+        msg.attach(html_part)
+        
+        # Send email
+        server = smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT'])
+        
+        if app.config['MAIL_USE_TLS']:
+            server.starttls()
+        
+        server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+        server.send_message(msg)
+        server.quit()
+        
+        logger.info(f"✅ Order confirmation email sent successfully to {customer_email}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Error sending order confirmation email: {str(e)}")
         return False
 
 def send_telegram_photo(photo_file=None, photo_path=None, filename=None, caption=""):
