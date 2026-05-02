@@ -47,9 +47,9 @@ if not secret_key:
 app.secret_key = secret_key
 
 # URL configuration for proper url_for generation
-app.config['SERVER_NAME'] = 'localhost:5000'
+# app.config['SERVER_NAME'] = 'localhost:5000'  # Commented out for Render deployment
 app.config['APPLICATION_ROOT'] = '/'
-app.config['PREFERRED_URL_SCHEME'] = 'http'
+app.config['PREFERRED_URL_SCHEME'] = 'https'  # Updated for Render deployment
 
 # File upload configuration
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
