@@ -538,16 +538,24 @@ def auto_update_order_amounts():
         from flask import request, jsonify
         from flask_wtf.csrf import validate_csrf
         
+        # Get JSON data
+        if not request.is_json:
+            return jsonify({'success': False, 'message': 'Content-Type must be application/json'}), 400
+        
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'message': 'No JSON data provided'}), 400
+        
         # Validate CSRF token
         try:
-            validate_csrf(request.form.get('csrf_token'))
+            validate_csrf(data.get('csrf_token'))
         except:
             return jsonify({'success': False, 'message': 'Invalid CSRF token'}), 400
         
-        # Get form data
-        order_id = request.form.get('order_id')
-        total_price = request.form.get('total_price', '0')
-        deposit_amount = request.form.get('deposit_amount', '0')
+        # Get JSON data
+        order_id = data.get('order_id')
+        total_price = data.get('total_price', '0')
+        deposit_amount = data.get('deposit_amount', '0')
         
         if not order_id:
             return jsonify({'success': False, 'message': 'Order ID is required'}), 400
@@ -599,4 +607,6 @@ def auto_update_order_amounts():
             return jsonify({'success': False, 'message': 'Order not found or no changes made'}), 404
             
     except Exception as e:
+        import logging
+        logging.error(f"Error in auto_update_order_amounts: {str(e)}")
         return jsonify({'success': False, 'message': f'Server error: {str(e)}'}), 500
