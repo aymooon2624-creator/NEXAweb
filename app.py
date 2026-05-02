@@ -127,6 +127,42 @@ def send_payment_notification(customer_name, tracking_code, amount, payment_type
         logger.error(f"Error sending Telegram notification: {str(e)}")
         return False
 
+def send_telegram_photo(photo_path, caption):
+    """Send photo to Telegram"""
+    
+    # Get Telegram credentials from environment
+    TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+    CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+    
+    if not TELEGRAM_TOKEN or not CHAT_ID:
+        logger.error("Telegram credentials not configured")
+        return False
+    
+    try:
+        # Send photo to Telegram
+        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendPhoto"
+        
+        with open(photo_path, 'rb') as photo:
+            files = {'photo': photo}
+            data = {
+                'chat_id': CHAT_ID,
+                'caption': caption,
+                'parse_mode': 'HTML'
+            }
+            
+            response = requests.post(url, files=files, data=data, timeout=10)
+            
+        if response.status_code == 200:
+            logger.info("Telegram photo sent successfully")
+            return True
+        else:
+            logger.error(f"Failed to send Telegram photo: {response.status_code}")
+            return False
+            
+    except Exception as e:
+        logger.error(f"Error sending Telegram photo: {str(e)}")
+        return False
+
 def create_app():
     """Application factory function"""
     

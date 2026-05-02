@@ -138,6 +138,37 @@ def submit_order():
         tracking_code = generate_tracking_code()
         print(f"🔢 Generated tracking code: {tracking_code}")
         
+        # Handle optional image upload
+        image_path = None
+        image_filename = None
+        
+        if 'image' in request.files:
+            image = request.files['image']
+            if image and image.filename != '':
+                # Validate image
+                if not allowed_file(image.filename):
+                    flash('Invalid image format. Allowed: JPG, JPEG, PNG, GIF', 'error')
+                    return redirect(url_for('orders.order_form'))
+                
+                # Secure filename
+                filename = secure_filename(image.filename)
+                
+                # Create project_images directory
+                project_images_dir = os.path.join(os.getcwd(), 'project_images')
+                os.makedirs(project_images_dir, exist_ok=True)
+                
+                # Save image with tracking code as filename
+                image_filename = f"{tracking_code}.jpg"
+                image_path = os.path.join('project_images', image_filename).replace('\\', '/')
+                full_image_path = os.path.join(project_images_dir, image_filename)
+                
+                try:
+                    image.save(full_image_path)
+                    print(f"🖼️ Image uploaded successfully: {full_image_path}")
+                    print(f"📁 Image stored in: project_images/{image_filename}")
+                except Exception as e:
+                    print(f"❌ Error saving image: {e}")
+        
         # Create order in MongoDB
         order_id = Order.create(
             name=name,
@@ -147,6 +178,7 @@ def submit_order():
             details=details,
             tracking_code=tracking_code,
             original_filename=tracking_code,  # Set original_filename to tracking_code
+            image_path=image_path,
             total_price=total_price,
             deposit_amount=deposit_amount
         )
@@ -154,7 +186,34 @@ def submit_order():
         if order_id:
             print(f"✅ Order created successfully with ID: {order_id}")
             
-                        
+            # Save project details to text file
+            try:
+                project_details_dir = os.path.join(os.getcwd(), 'project_details')
+                os.makedirs(project_details_dir, exist_ok=True)
+                
+                details_filename = f"{tracking_code}.txt"
+                details_filepath = os.path.join(project_details_dir, details_filename)
+                
+                with open(details_filepath, 'w', encoding='utf-8') as f:
+                    f.write(f"Project Details - Tracking Code: {tracking_code}\n")
+                    f.write(f"{"="*50}\n\n")
+                    f.write(f"Customer Name: {name}\n")
+                    f.write(f"Email: {email}\n")
+                    f.write(f"Phone: {phone}\n")
+                    f.write(f"Project Type: {project_type}\n")
+                    f.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+                    f.write(f"Project Details:\n")
+                    f.write(f"{"-"*20}\n")
+                    f.write(f"{details}\n\n")
+                    f.write(f"Pricing:\n")
+                    f.write(f"Total Price: ${total_price}\n")
+                    f.write(f"Deposit Amount: ${deposit_amount}\n")
+                    f.write(f"Remaining Amount: ${total_price - deposit_amount}\n")
+                
+                print(f"📄 Project details saved: {details_filepath}")
+            except Exception as e:
+                print(f"❌ Error saving project details: {e}")
+            
             # Store tracking code in session for backup
             session['last_tracking_code'] = tracking_code
             
@@ -166,8 +225,8 @@ def submit_order():
                 'email': email,
                 'phone': phone,
                 'project_type': project_type,
-                'details': details,
-                'tracking_code': tracking_code
+                'tracking_code': tracking_code,
+                'details': details
             }
             
             try:
@@ -178,8 +237,23 @@ def submit_order():
                 else:
                     print("❌ Failed to send Telegram notification")
             except Exception as e:
-                print(f"❌ Error importing notification system: {e}")
-                print("❌ Telegram notification not sent")
+                print(f"❌ Error creating new order notification: {e}")
+            
+            # Send image notification if image was uploaded
+            if image_path:
+                print("🖼️ Sending image notification to Telegram...")
+                try:
+                    from app import send_telegram_photo
+                    photo_success = send_telegram_photo(
+                        photo_path=image_path,
+                        caption=f"📸 Project Image for Order {tracking_code}\n\nCustomer: {name}\nProject: {project_type}"
+                    )
+                    if photo_success:
+                        print("✅ Image notification sent successfully")
+                    else:
+                        print("❌ Failed to send image notification")
+                except Exception as e:
+                    print(f"❌ Error sending image notification: {e}")
             
             flash('Order submitted successfully! Your tracking code is: ' + tracking_code, 'success')
             return redirect(url_for('orders.success_page', tracking_code=tracking_code))
