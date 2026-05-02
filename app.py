@@ -291,6 +291,9 @@ def create_app():
     # Make limiter available to blueprints
     app.limiter = limiter
     
+    # Disable strict slashes for all routes
+    app.url_map.strict_slashes = False
+    
     # Create upload directory if it doesn't exist
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     
@@ -300,6 +303,7 @@ def create_app():
     print("   - Auth routes (/login, /logout)")
     print("   - Admin routes (/admin)")
     print("   - Order routes (/order, /status)")
+    print("   - Strict slashes disabled for all routes")
     
     return app
 

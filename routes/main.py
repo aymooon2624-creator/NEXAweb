@@ -11,7 +11,7 @@ import os
 from models import Project, Testimonial
 from database import get_mongo
 
-main_bp = Blueprint('main', __name__, strict_slashes=False)
+main_bp = Blueprint('main', __name__)
 
 
 @main_bp.route('/')
