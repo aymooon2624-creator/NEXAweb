@@ -1030,34 +1030,96 @@
             });
         }
 
-        // Update order price function
+        // Update order price function (updated to use JSON and proper CSRF)
         function updateOrderPrice(orderId) {
-            const totalPrice = document.getElementById(`total_price_${orderId}`).value;
-            const depositAmount = document.getElementById(`deposit_amount_${orderId}`).value;
+            console.log('💰 Update button clicked for order:', orderId);
             
-            fetch('/admin/update_order_amounts', {
+            const totalPriceElement = document.getElementById(`total_price_${orderId}`);
+            const depositAmountElement = document.getElementById(`deposit_amount_${orderId}`);
+            
+            if (!totalPriceElement || !depositAmountElement) {
+                console.error('❌ Could not find input elements for order:', orderId);
+                showNeonToast('❌ Error: Could not find price inputs', 'error');
+                return;
+            }
+            
+            const totalPrice = totalPriceElement.value;
+            const depositAmount = depositAmountElement.value;
+            
+            console.log('📊 Values:', { totalPrice, depositAmount });
+            
+            // Validate values
+            const total = parseFloat(totalPrice) || 0.0;
+            const deposit = parseFloat(depositAmount) || 0.0;
+            
+            if (total < 0 || deposit < 0) {
+                showNeonToast('❌ Prices cannot be negative', 'error');
+                return;
+            }
+            
+            if (deposit > total) {
+                showNeonToast('❌ Deposit cannot exceed total price', 'error');
+                return;
+            }
+            
+            const remaining = Math.max(0.0, total - deposit);
+            
+            console.log('💰 Calculation:', { total, deposit, remaining });
+            
+            // Update remaining amount display immediately
+            const remainingElement = document.getElementById(`remaining_amount_${orderId}`);
+            if (remainingElement) {
+                const oldValue = remainingElement.textContent;
+                remainingElement.textContent = `$${remaining.toFixed(2)}`;
+                console.log('✅ Updated remaining amount from', oldValue, 'to', `$${remaining.toFixed(2)}`);
+            } else {
+                console.error('❌ Could not find remaining amount element for order:', orderId);
+            }
+            
+            // Get CSRF token from meta tag (preferred method)
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            console.log('🔐 CSRF Token:', csrfToken);
+            
+            // Send to server for database update
+            fetch('/admin/auto_update_order_amounts', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
                 },
-                body: new URLSearchParams({
+                body: JSON.stringify({
+                    csrf_token: csrfToken,
                     order_id: orderId,
-                    total_price: parseFloat(totalPrice) || 0.0,
-                    deposit_amount: parseFloat(depositAmount) || 0.0
+                    total_price: total,
+                    deposit_amount: deposit
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('📡 Response status:', response.status);
+                return response.json();
+            })
             .then(data => {
+                console.log('📨 Response data:', data);
                 if (data.success) {
+                    console.log('✅ Update successful');
                     showNeonToast('Order prices updated successfully', 'success');
-                    // Refresh the page to show updated remaining amount
-                    setTimeout(() => location.reload(), 1000);
+                    // Show subtle success indicator
+                    const inputs = document.querySelectorAll(`#total_price_${orderId}, #deposit_amount_${orderId}`);
+                    inputs.forEach(input => {
+                        input.style.borderColor = '#10b981';
+                        setTimeout(() => {
+                            input.style.borderColor = '';
+                        }, 1000);
+                    });
                 } else {
+                    console.error('❌ Update failed:', data.message);
                     showNeonToast('Error updating prices: ' + data.message, 'error');
+                    // Revert to original values on error
+                    location.reload();
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('❌ Network error:', error);
                 showNeonToast('Network error updating prices', 'error');
             });
         }
