@@ -1010,6 +1010,36 @@ def paypal_payment():
                             print("✅ Payment notification image sent successfully")
                         else:
                             print("❌ Failed to send payment notification image")
+                        
+                        # Also send the uploaded receipt image if exists
+                        if receipt_path:
+                            try:
+                                # Get full path to receipt
+                                receipt_full_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), receipt_path)
+                                print(f"📄 Sending receipt image: {receipt_full_path}")
+                                
+                                if os.path.exists(receipt_full_path):
+                                    receipt_caption = f"""📄 <b>Payment Receipt</b>
+                                    
+🏷️ <b>Tracking Code:</b> <code>{tracking_code}</code>
+💳 <b>Payment Type:</b> {payment_type.title()}
+📅 <b>Date:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"""
+                                    
+                                    receipt_success = send_telegram_photo(
+                                        photo_path=receipt_full_path,
+                                        filename=f"receipt_{tracking_code}.jpg",
+                                        caption=receipt_caption
+                                    )
+                                    
+                                    if receipt_success:
+                                        print("✅ Receipt image sent successfully")
+                                    else:
+                                        print("❌ Failed to send receipt image")
+                                else:
+                                    print(f"❌ Receipt file not found: {receipt_full_path}")
+                                    
+                            except Exception as receipt_error:
+                                print(f"❌ Error sending receipt image: {receipt_error}")
                             
                     except Exception as img_error:
                         print(f"❌ Error creating payment image: {img_error}")
