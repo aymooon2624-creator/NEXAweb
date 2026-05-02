@@ -138,45 +138,6 @@ def submit_order():
         tracking_code = generate_tracking_code()
         print(f"🔢 Generated tracking code: {tracking_code}")
         
-        # Handle file upload
-        file_path = None
-        original_filename = None
-        
-        if 'file' in request.files:
-            file = request.files['file']
-            if file and file.filename != '':
-                # Temporarily skip validation for testing
-                print(f"🔍 Skipping file validation for testing {tracking_code}")
-                is_valid = True
-                validation_message = "Validation skipped for testing"
-                print(f"📋 File validation result: {is_valid} - {validation_message}")
-                if not is_valid:
-                    flash(validation_message, 'error')
-                    return redirect(url_for('orders.order_form'))
-                
-                # Secure filename
-                filename = secure_filename(file.filename)
-                original_filename = file.filename
-                
-                # Create order_upload directory
-                order_upload_dir = os.path.join(os.getcwd(), 'order_upload')
-                os.makedirs(order_upload_dir, exist_ok=True)
-                
-                # Save file with tracking code as filename
-                upload_filename = f"{tracking_code}.{filename.rsplit('.', 1)[1].lower()}"
-                file_path = os.path.join('order_upload', upload_filename).replace('\\', '/')
-                full_path = os.path.join(order_upload_dir, upload_filename)
-                
-                try:
-                    file.save(full_path)
-                    print(f"📎 File uploaded successfully: {full_path}")
-                    print(f"📁 File stored in: order_upload/{upload_filename}")
-                except Exception as e:
-                    print(f"❌ Error saving file: {e}")
-                    print(f"📁 Attempted path: {full_path}")
-                    print(f"📁 Directory exists: {os.path.exists(order_upload_dir)}")
-                    print(f"📁 Directory writable: {os.access(order_upload_dir, os.W_OK)}")
-        
         # Create order in MongoDB
         order_id = Order.create(
             name=name,
@@ -185,8 +146,6 @@ def submit_order():
             project_type=project_type,
             details=details,
             tracking_code=tracking_code,
-            file_path=file_path,
-            original_filename=original_filename,
             total_price=total_price,
             deposit_amount=deposit_amount
         )
@@ -194,30 +153,7 @@ def submit_order():
         if order_id:
             print(f"✅ Order created successfully with ID: {order_id}")
             
-            # Save order details to text file
-            try:
-                order_data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'order_data')
-                os.makedirs(order_data_dir, exist_ok=True)
-                
-                details_filename = f"{tracking_code}.txt"
-                details_filepath = os.path.join(order_data_dir, details_filename)
-                
-                with open(details_filepath, 'w', encoding='utf-8') as f:
-                    f.write(f"Order Details - Tracking Code: {tracking_code}\n")
-                    f.write(f"{"="*50}\n\n")
-                    f.write(f"Customer Name: {name}\n")
-                    f.write(f"Email: {email}\n")
-                    f.write(f"Phone: {phone}\n")
-                    f.write(f"Project Type: {project_type}\n")
-                    f.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
-                    f.write(f"Project Details:\n")
-                    f.write(f"{"-"*20}\n")
-                    f.write(f"{details}\n")
-                
-                print(f"📄 Order details saved to: {details_filepath}")
-            except Exception as e:
-                print(f"❌ Error saving order details to file: {e}")
-            
+                        
             # Store tracking code in session for backup
             session['last_tracking_code'] = tracking_code
             

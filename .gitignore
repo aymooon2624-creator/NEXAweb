@@ -58,15 +58,6 @@ temp/
 static/uploads/*
 !static/uploads/.gitkeep
 
-# Order data directories (keep structure but ignore contents)
-order_data/*
-!order_data/.gitkeep
-order_payment/*
-!order_payment/.gitkeep
-order_upload/*
-!order_upload/.gitkeep
-order_attachments/*
-!order_attachments/.gitkeep
 
 # Email configuration
 email_config.py
