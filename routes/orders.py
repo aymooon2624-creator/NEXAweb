@@ -145,6 +145,7 @@ def submit_order():
         # Handle optional image upload
         image_file = None
         image_filename = None
+        temp_image_path = None
         
         if 'image' in request.files:
             image = request.files['image']
@@ -155,10 +156,20 @@ def submit_order():
                         flash('Invalid image format. Allowed: JPG, JPEG, PNG, GIF', 'error')
                         return redirect(url_for('orders.order_form'))
                     
-                    # Store image in memory for Telegram
-                    image_file = image
-                    image_filename = f"{tracking_code}.jpg"
-                    print(f"🖼️ Image prepared for Telegram: {image_filename}")
+                    # Get original extension
+                    original_filename = secure_filename(image.filename)
+                    file_extension = original_filename.rsplit('.', 1)[1].lower()
+                    
+                    # Create temp directory
+                    temp_dir = os.path.join(os.getcwd(), 'temp')
+                    os.makedirs(temp_dir, exist_ok=True)
+                    
+                    # Save image temporarily with tracking code name
+                    image_filename = f"{tracking_code}.{file_extension}"
+                    temp_image_path = os.path.join(temp_dir, image_filename)
+                    
+                    image.save(temp_image_path)
+                    print(f"🖼️ Image saved temporarily: {temp_image_path}")
                     
                 except Exception as e:
                     print(f"❌ Error processing image upload: {e}")
@@ -181,7 +192,13 @@ def submit_order():
         if order_id:
             print(f"✅ Order created successfully with ID: {order_id}")
             
-            # Create project details content in memory
+            # Create temporary text file for project details
+            temp_dir = os.path.join(os.getcwd(), 'temp')
+            os.makedirs(temp_dir, exist_ok=True)
+            
+            details_filename = f"{tracking_code}.txt"
+            temp_details_path = os.path.join(temp_dir, details_filename)
+            
             project_details_content = f"""Project Details - Tracking Code: {tracking_code}
 {"="*50}
 
@@ -201,69 +218,111 @@ Deposit Amount: ${deposit_amount}
 Remaining Amount: ${total_price - deposit_amount}
 """
             
-            print(f"📄 Project details prepared for Telegram: {tracking_code}.txt")
+            # Save to temporary file
+            with open(temp_details_path, 'w', encoding='utf-8') as f:
+                f.write(project_details_content)
+            
+            print(f"📄 Project details saved temporarily: {temp_details_path}")
             
             # Store tracking code in session for backup
             session['last_tracking_code'] = tracking_code
             
-            # Send Telegram notification with project details as document
-            print("📱 Sending Telegram notification with project details...")
+            # Send Telegram notifications using requests directly
+            print("📱 Sending Telegram notifications...")
             
+            # Get Telegram credentials
+            import requests
+            TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+            CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+            
+            if not TELEGRAM_TOKEN or not CHAT_ID:
+                print("❌ Telegram credentials not configured")
+            else:
+                try:
+                    # 1. Send basic text message with order info
+                    text_message = f"""🆕 <b>NEW ORDER RECEIVED</b> 🆕
+
+� <b>Customer:</b> {name}
+📧 <b>Email:</b> {email}
+📱 <b>Phone:</b> {phone}
+🏷️ <b>Tracking Code:</b> <code>{tracking_code}</code>
+📋 <b>Project Type:</b> {project_type}
+💰 <b>Total Price:</b> ${total_price}
+💳 <b>Deposit:</b> ${deposit_amount}
+⏰ <b>Date:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+📝 <b>Project Details:</b>
+{details[:200]}{'...' if len(details) > 200 else ''}
+
+{'─' * 30}
+🎯 <i>Order submitted successfully</i> 🎯
+{'─' * 30}"""
+
+                    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+                    payload = {
+                        'chat_id': CHAT_ID,
+                        'text': text_message,
+                        'parse_mode': 'HTML',
+                        'disable_web_page_preview': True
+                    }
+                    
+                    response = requests.post(url, json=payload, timeout=10)
+                    if response.status_code == 200:
+                        print("✅ Text message sent successfully")
+                    else:
+                        print(f"❌ Failed to send text message: {response.status_code}")
+                
+                    # 2. Send project details as document
+                    if os.path.exists(temp_details_path):
+                        with open(temp_details_path, 'rb') as doc_file:
+                            files = {'document': (details_filename, doc_file, 'text/plain')}
+                            data = {
+                                'chat_id': CHAT_ID,
+                                'caption': f"� <b>Project Details File</b>\n\n🏷️ <code>{tracking_code}</code>\n👤 {name}\n📋 {project_type}",
+                                'parse_mode': 'HTML'
+                            }
+                            
+                            doc_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendDocument"
+                            doc_response = requests.post(doc_url, files=files, data=data, timeout=10)
+                            
+                            if doc_response.status_code == 200:
+                                print("✅ Document sent successfully")
+                            else:
+                                print(f"❌ Failed to send document: {doc_response.status_code}")
+                    
+                    # 3. Send image if uploaded
+                    if temp_image_path and os.path.exists(temp_image_path):
+                        with open(temp_image_path, 'rb') as img_file:
+                            files = {'photo': (image_filename, img_file, 'image/jpeg')}
+                            data = {
+                                'chat_id': CHAT_ID,
+                                'caption': f"📸 <b>Project Image</b>\n\n🏷️ <code>{tracking_code}</code>\n👤 {name}\n📋 {project_type}",
+                                'parse_mode': 'HTML'
+                            }
+                            
+                            photo_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendPhoto"
+                            photo_response = requests.post(photo_url, files=files, data=data, timeout=10)
+                            
+                            if photo_response.status_code == 200:
+                                print("✅ Image sent successfully")
+                            else:
+                                print(f"❌ Failed to send image: {photo_response.status_code}")
+                
+                except Exception as e:
+                    print(f"❌ Error sending Telegram notifications: {e}")
+            
+            # Cleanup: Remove temporary files
             try:
-                from app import send_telegram_document
+                if temp_details_path and os.path.exists(temp_details_path):
+                    os.remove(temp_details_path)
+                    print(f"🗑️ Removed temporary details file: {temp_details_path}")
                 
-                # Send project details as document
-                doc_success = send_telegram_document(
-                    content=project_details_content,
-                    filename=f"{tracking_code}.txt",
-                    caption=f"📄 Project Details for Order {tracking_code}\n\nCustomer: {name}\nProject: {project_type}"
-                )
-                
-                if doc_success:
-                    print("✅ Project details sent successfully")
-                else:
-                    print("❌ Failed to send project details")
+                if temp_image_path and os.path.exists(temp_image_path):
+                    os.remove(temp_image_path)
+                    print(f"🗑️ Removed temporary image file: {temp_image_path}")
                     
             except Exception as e:
-                print(f"❌ Error sending project details: {e}")
-            
-            # Send image notification if image was uploaded
-            if image_file:
-                print("🖼️ Sending image notification to Telegram...")
-                try:
-                    from app import send_telegram_photo
-                    photo_success = send_telegram_photo(
-                        photo_file=image_file,
-                        filename=image_filename,
-                        caption=f"📸 Project Image for Order {tracking_code}\n\nCustomer: {name}\nProject: {project_type}"
-                    )
-                    if photo_success:
-                        print("✅ Image notification sent successfully")
-                    else:
-                        print("❌ Failed to send image notification")
-                except Exception as e:
-                    print(f"❌ Error sending image notification: {e}")
-            
-            # Send basic text notification as backup
-            print("📱 Sending basic Telegram notification...")
-            order_data = {
-                'name': name,
-                'email': email,
-                'phone': phone,
-                'project_type': project_type,
-                'tracking_code': tracking_code,
-                'details': details
-            }
-            
-            try:
-                from utils.notifications import notify_new_order
-                telegram_success = notify_new_order(order_data)
-                if telegram_success:
-                    print("✅ Basic Telegram notification sent successfully")
-                else:
-                    print("❌ Failed to send basic Telegram notification")
-            except Exception as e:
-                print(f"❌ Error creating basic notification: {e}")
+                print(f"❌ Error cleaning up temporary files: {e}")
             
             flash('Order submitted successfully! Your tracking code is: ' + tracking_code, 'success')
             return redirect(url_for('orders.success_page', tracking_code=tracking_code))

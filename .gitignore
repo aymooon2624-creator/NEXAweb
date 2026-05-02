@@ -58,6 +58,10 @@ temp/
 static/uploads/*
 !static/uploads/.gitkeep
 
+# Temporary files
+temp/*
+!temp/.gitkeep
+
 
 # Email configuration
 email_config.py
