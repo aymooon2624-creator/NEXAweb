@@ -18,7 +18,7 @@ from telegram_notifications import send_new_order_notification
 # Configure logger
 logger = logging.getLogger(__name__)
 
-orders_bp = Blueprint('orders', __name__)
+orders_bp = Blueprint('orders', __name__, strict_slashes=False)
 
 # File upload configuration
 ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'}

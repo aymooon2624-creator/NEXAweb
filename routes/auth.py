@@ -11,7 +11,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from models import User, SecurityLog
 from database import get_mongo
 
-auth_bp = Blueprint('auth', __name__)
+auth_bp = Blueprint('auth', __name__, strict_slashes=False)
 
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
