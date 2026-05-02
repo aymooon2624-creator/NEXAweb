@@ -58,12 +58,6 @@ temp/
 static/uploads/*
 !static/uploads/.gitkeep
 
-# Project directories (keep structure but ignore contents)
-project_images/*
-!project_images/.gitkeep
-project_details/*
-!project_details/.gitkeep
-
 
 # Email configuration
 email_config.py
