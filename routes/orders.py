@@ -145,29 +145,32 @@ def submit_order():
         if 'image' in request.files:
             image = request.files['image']
             if image and image.filename != '':
-                # Validate image
-                if not allowed_file(image.filename):
-                    flash('Invalid image format. Allowed: JPG, JPEG, PNG, GIF', 'error')
-                    return redirect(url_for('orders.order_form'))
-                
-                # Secure filename
-                filename = secure_filename(image.filename)
-                
-                # Create project_images directory
-                project_images_dir = os.path.join(os.getcwd(), 'project_images')
-                os.makedirs(project_images_dir, exist_ok=True)
-                
-                # Save image with tracking code as filename
-                image_filename = f"{tracking_code}.jpg"
-                image_path = os.path.join('project_images', image_filename).replace('\\', '/')
-                full_image_path = os.path.join(project_images_dir, image_filename)
-                
                 try:
+                    # Validate image
+                    if not allowed_file(image.filename):
+                        flash('Invalid image format. Allowed: JPG, JPEG, PNG, GIF', 'error')
+                        return redirect(url_for('orders.order_form'))
+                    
+                    # Secure filename
+                    filename = secure_filename(image.filename)
+                    
+                    # Create project_images directory
+                    project_images_dir = os.path.join(os.getcwd(), 'project_images')
+                    os.makedirs(project_images_dir, exist_ok=True)
+                    
+                    # Save image with tracking code as filename
+                    image_filename = f"{tracking_code}.jpg"
+                    image_path = os.path.join('project_images', image_filename).replace('\\', '/')
+                    full_image_path = os.path.join(project_images_dir, image_filename)
+                    
                     image.save(full_image_path)
                     print(f"🖼️ Image uploaded successfully: {full_image_path}")
                     print(f"📁 Image stored in: project_images/{image_filename}")
+                    
                 except Exception as e:
-                    print(f"❌ Error saving image: {e}")
+                    print(f"❌ Error processing image upload: {e}")
+                    flash('Error processing image upload. Please try again.', 'error')
+                    return redirect(url_for('orders.order_form'))
         
         # Create order in MongoDB
         order_id = Order.create(
