@@ -232,7 +232,7 @@ Remaining Amount: ${total_price - deposit_amount}
             
             # Get Telegram credentials
             import requests
-            TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+            TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
             CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
             
             if not TELEGRAM_TOKEN or not CHAT_ID:
@@ -246,13 +246,9 @@ Remaining Amount: ${total_price - deposit_amount}
 📧 <b>Email:</b> {email}
 📱 <b>Phone:</b> {phone}
 🏷️ <b>Tracking Code:</b> <code>{tracking_code}</code>
-📋 <b>Project Type:</b> {project_type}
-💰 <b>Total Price:</b> ${total_price}
 💳 <b>Deposit:</b> ${deposit_amount}
 ⏰ <b>Date:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-
-📝 <b>Project Details:</b>
-{details[:200]}{'...' if len(details) > 200 else ''}"""
+"""
 
                     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
                     payload = {
@@ -274,7 +270,7 @@ Remaining Amount: ${total_price - deposit_amount}
                             files = {'document': (details_filename, doc_file, 'text/plain')}
                             data = {
                                 'chat_id': CHAT_ID,
-                                'caption': f"📄 <b>Project Details File</b>\n\n🏷️ <code>{tracking_code}</code>\n👤 {name}\n📋 {project_type}",
+                                'caption': f"📄 <b>Project Details File</b>\n\n🏷️ <code>{tracking_code}</code>",
                                 'parse_mode': 'HTML'
                             }
                             
@@ -292,7 +288,7 @@ Remaining Amount: ${total_price - deposit_amount}
                             files = {'photo': (image_filename, img_file, 'image/jpeg')}
                             data = {
                                 'chat_id': CHAT_ID,
-                                'caption': f"📸 <b>Project Image</b>\n\n🏷️ <code>{tracking_code}</code>\n👤 {name}\n📋 {project_type}",
+                                'caption': f"📸 <b>Project Image</b>\n\n🏷️ <code>{tracking_code}</code>",
                                 'parse_mode': 'HTML'
                             }
                             
@@ -305,15 +301,10 @@ Remaining Amount: ${total_price - deposit_amount}
                                 print(f"❌ Failed to send image: {photo_response.status_code}")
                     
                     # 4. Send final separator message with two lines
-                    separator_message = f"""{'=' * 50}
-🎯 <i>Order submitted successfully</i> 🎯
-{'=' * 50}
+                    separator_message = f"""
 
 <b>Order Complete</b> ✅
 🏷️ <code>{tracking_code}</code>
-👤 {name}
-📋 {project_type}
-💰 ${total_price}
 
 {'─' * 50}
 <b>END OF ORDER</b>
@@ -960,7 +951,72 @@ def paypal_payment():
                     # Generate transaction ID
                     transaction_id = f"PAYPAL_{payment_type.upper()}_{tracking_code}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                     
-                    # Send notification
+                    # Create image with tracking code
+                    try:
+                        from PIL import Image, ImageDraw, ImageFont
+                        import io
+                        
+                        # Create image with tracking code
+                        img = Image.new('RGB', (400, 200), color='#1f2937')
+                        draw = ImageDraw.Draw(img)
+                        
+                        # Try to use a larger font
+                        try:
+                            font = ImageFont.truetype("arial.ttf", 24)
+                        except:
+                            font = ImageFont.load_default()
+                        
+                        # Add tracking code text
+                        text_lines = [
+                            f"Payment Received",
+                            f"Tracking Code:",
+                            f"{tracking_code}",
+                            f"Amount: ${amount:.2f}"
+                        ]
+                        
+                        y_position = 20
+                        for line in text_lines:
+                            # Calculate text position to center it
+                            bbox = draw.textbbox((0, 0), line, font=font)
+                            text_width = bbox[2] - bbox[0]
+                            x_position = (400 - text_width) // 2
+                            
+                            # Draw text
+                            draw.text((x_position, y_position), line, fill='#00ff00', font=font)
+                            y_position += 35
+                        
+                        # Save image to bytes
+                        img_bytes = io.BytesIO()
+                        img.save(img_bytes, format='PNG')
+                        img_bytes.seek(0)
+                        
+                        # Send image with tracking code
+                        photo_caption = f"""💳 <b>Payment Confirmation</b>
+                        
+🏷️ <b>Tracking Code:</b> <code>{tracking_code}</code>
+👤 <b>Customer:</b> {order_data.get('name', 'Unknown')}
+💰 <b>Amount:</b> ${amount:.2f}
+💳 <b>Type:</b> {payment_type.title()}
+🆔 <b>Transaction ID:</b> <code>{transaction_id}</code>
+📅 <b>Date:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"""
+                        
+                        photo_success = send_telegram_photo(
+                            photo_file=img_bytes,
+                            filename=f"payment_{tracking_code}.png",
+                            caption=photo_caption
+                        )
+                        
+                        if photo_success:
+                            print("✅ Payment notification image sent successfully")
+                        else:
+                            print("❌ Failed to send payment notification image")
+                            
+                    except Exception as img_error:
+                        print(f"❌ Error creating payment image: {img_error}")
+                        # Fallback to text notification only
+                        pass
+                    
+                    # Send text notification
                     notification_success = send_payment_notification(
                         customer_name=order_data.get('name', 'Unknown'),
                         tracking_code=tracking_code,
