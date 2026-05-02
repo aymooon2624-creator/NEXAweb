@@ -983,34 +983,8 @@
                 console.error('❌ Could not find remaining amount element for order:', orderId);
             }
             
-            // Get CSRF token from multiple possible sources
-            let csrfToken = null;
-            
-            // Try to get from meta tag
-            const metaTag = document.querySelector('meta[name="csrf-token"]');
-            if (metaTag) {
-                csrfToken = metaTag.getAttribute('content');
-            }
-            
-            // Try to get from hidden input
-            if (!csrfToken) {
-                const hiddenInput = document.querySelector('input[name="csrf_token"]');
-                if (hiddenInput) {
-                    csrfToken = hiddenInput.value;
-                }
-            }
-            
-            // Try to get from form
-            if (!csrfToken) {
-                const form = document.querySelector('form');
-                if (form) {
-                    const input = form.querySelector('input[name="csrf_token"]');
-                    if (input) {
-                        csrfToken = input.value;
-                    }
-                }
-            }
-            
+            // Get CSRF token from meta tag (preferred method)
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             console.log('🔐 CSRF Token:', csrfToken);
             
             // Send to server for database update
@@ -1018,7 +992,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken || ''
+                    'X-CSRFToken': csrfToken
                 },
                 body: JSON.stringify({
                     csrf_token: csrfToken,
