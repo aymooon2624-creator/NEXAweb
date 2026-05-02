@@ -1046,7 +1046,7 @@ def paypal_payment():
                         # Fallback to text notification only
                         pass
                     
-                    # Send text notification
+                    # Send text notification first
                     notification_success = send_payment_notification(
                         customer_name=order_data.get('name', 'Unknown'),
                         tracking_code=tracking_code,
@@ -1059,6 +1059,80 @@ def paypal_payment():
                         print("✅ Telegram payment notification sent successfully")
                     else:
                         print("❌ Failed to send Telegram payment notification")
+                    
+                    # Send uploaded receipt image if exists (after text notification)
+                    if receipt_path:
+                        try:
+                            # Get full path to receipt
+                            receipt_full_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), receipt_path)
+                            print(f"📄 Sending receipt image: {receipt_full_path}")
+                            
+                            if os.path.exists(receipt_full_path):
+                                receipt_caption = f"""📄 <b>Payment Receipt</b>
+                                
+🏷️ <b>Tracking Code:</b> <code>{tracking_code}</code>
+💳 <b>Payment Type:</b> {payment_type.title()}
+📅 <b>Date:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"""
+                                
+                                receipt_success = send_telegram_photo(
+                                    photo_path=receipt_full_path,
+                                    filename=f"receipt_{tracking_code}.jpg",
+                                    caption=receipt_caption
+                                )
+                                
+                                if receipt_success:
+                                    print("✅ Receipt image sent successfully")
+                                else:
+                                    print("❌ Failed to send receipt image")
+                            else:
+                                print(f"❌ Receipt file not found: {receipt_full_path}")
+                                
+                        except Exception as receipt_error:
+                            print(f"❌ Error sending receipt image: {receipt_error}")
+                    
+                    # Send final separator message for payment completion
+                    try:
+                        from app import send_telegram_message
+                        import requests
+                        
+                        TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
+                        CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+                        
+                        if TELEGRAM_TOKEN and CHAT_ID:
+                            separator_message = f"""
+{'=' * 50}
+<b>END OF PAYMENT</b>
+{'=' * 50}
+
+🏷️ <b>Tracking Code:</b> <code>{tracking_code}</code>
+💳 <b>Payment Type:</b> {payment_type.title()}
+💰 <b>Amount:</b> ${amount:.2f}
+👤 <b>Customer:</b> {order_data.get('name', 'Unknown')}
+🆔 <b>Transaction ID:</b> <code>{transaction_id}</code>
+📅 <b>Date:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+{'─' * 50}
+<b>Payment Process Completed Successfully</b>
+{'─' * 50}"""
+                            
+                            separator_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+                            separator_payload = {
+                                'chat_id': CHAT_ID,
+                                'text': separator_message.strip(),
+                                'parse_mode': 'HTML',
+                                'disable_web_page_preview': True
+                            }
+                            
+                            separator_response = requests.post(separator_url, json=separator_payload, timeout=10)
+                            if separator_response.status_code == 200:
+                                print("✅ Payment separator message sent successfully")
+                            else:
+                                print(f"❌ Failed to send separator message: {separator_response.status_code}")
+                        else:
+                            print("❌ Telegram credentials not available for separator message")
+                            
+                    except Exception as separator_error:
+                        print(f"❌ Error sending separator message: {separator_error}")
             except Exception as e:
                 print(f"❌ Error sending Telegram payment notification: {e}")
             
