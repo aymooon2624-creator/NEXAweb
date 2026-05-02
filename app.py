@@ -71,9 +71,9 @@ def get_locale():
     # Fallback to browser language
     return request.accept_languages.best_match(app.config['LANGUAGES']) or app.config['BABEL_DEFAULT_LOCALE']
 
-def send_payment_notification(customer_name, tracking_code, amount, payment_type, transaction_id):
+def send_tailored_payment_notification(customer_name, tracking_code, amount, payment_type, transaction_id, photo_file=None):
     """
-    Send payment notification to Telegram with professional HTML formatting
+    Send tailored payment notification to Telegram with photo and conditional footer
     """
     import requests
     from datetime import datetime
@@ -82,12 +82,13 @@ def send_payment_notification(customer_name, tracking_code, amount, payment_type
     TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
     CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
     
-    logger.info(f"=== send_payment_notification called ===")
+    logger.info(f"=== send_tailored_payment_notification called ===")
     logger.info(f"TELEGRAM_TOKEN exists: {bool(TELEGRAM_TOKEN)}")
     logger.info(f"CHAT_ID exists: {bool(CHAT_ID)}")
     logger.info(f"Customer: {customer_name}, Tracking: {tracking_code}, Amount: {amount}")
     logger.info(f"Payment type: {payment_type}")
     logger.info(f"Transaction ID: {transaction_id}")
+    logger.info(f"Photo file provided: {bool(photo_file)}")
     
     # Validate required environment variables
     if not TELEGRAM_TOKEN or not CHAT_ID:
@@ -102,8 +103,8 @@ def send_payment_notification(customer_name, tracking_code, amount, payment_type
     # Format current date
     current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
-    # Create HTML formatted message
-    message = f"""
+    # Create caption for photo
+    caption = f"""
 🔵 <b>إشعار دفع جديد (NEXAweb)</b>
 
 👤 <b>الزبون:</b> {customer_name}
@@ -111,34 +112,71 @@ def send_payment_notification(customer_name, tracking_code, amount, payment_type
 💰 <b>المبلغ المدفوع:</b> ${amount}
 💳 <b>نوع الدفعة:</b> {payment_type_text}
 🆔 <b>رقم العملية:</b> {transaction_id}
-📅 <b>التاريخ:</b> {current_date}
-    """.strip()
+📅 <b>التاريخ:</b> {current_date}"""
     
-    # Send message to Telegram
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    # Add footer for non-deposit payments
+    if payment_type != 'deposit':
+        caption += f"""
+
+══════════════
+<b>END OF PAYMENT</b>
+══════════════"""
     
-    payload = {
-        'chat_id': CHAT_ID,
-        'text': message,
-        'parse_mode': 'HTML',
-        'disable_web_page_preview': True
-    }
+    caption = caption.strip()
     
+    # Send photo with caption
     try:
-        logger.info(f"Sending to URL: {url}")
-        logger.info(f"Payload: {payload}")
-        
-        response = requests.post(url, json=payload, timeout=10)
-        logger.info(f"Response status: {response.status_code}")
-        logger.info(f"Response body: {response.text}")
-        
-        if response.status_code == 200:
-            logger.info("✅ Telegram payment notification sent successfully")
-            return True
+        if photo_file:
+            # Send with photo
+            url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendPhoto"
+            
+            files = {'photo': (f"{tracking_code}.jpg", photo_file, 'image/jpeg')}
+            data = {
+                'chat_id': CHAT_ID,
+                'caption': caption,
+                'parse_mode': 'HTML'
+            }
+            
+            logger.info(f"Sending photo to URL: {url}")
+            logger.info(f"Photo data: chat_id={CHAT_ID}, caption_length={len(caption)}")
+            
+            response = requests.post(url, files=files, data=data, timeout=10)
+            logger.info(f"Photo response status: {response.status_code}")
+            logger.info(f"Photo response body: {response.text}")
+            
+            if response.status_code == 200:
+                logger.info("✅ Telegram payment notification with photo sent successfully")
+                return True
+            else:
+                logger.error(f"❌ Failed to send Telegram photo: {response.status_code}")
+                logger.error(f"Response: {response.text}")
+                return False
         else:
-            logger.error(f"❌ Failed to send Telegram notification: {response.status_code}")
-            logger.error(f"Response: {response.text}")
-            return False
+            # Send text message only
+            url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+            
+            payload = {
+                'chat_id': CHAT_ID,
+                'text': caption,
+                'parse_mode': 'HTML',
+                'disable_web_page_preview': True
+            }
+            
+            logger.info(f"Sending text to URL: {url}")
+            logger.info(f"Payload: {payload}")
+            
+            response = requests.post(url, json=payload, timeout=10)
+            logger.info(f"Response status: {response.status_code}")
+            logger.info(f"Response body: {response.text}")
+            
+            if response.status_code == 200:
+                logger.info("✅ Telegram payment notification sent successfully")
+                return True
+            else:
+                logger.error(f"❌ Failed to send Telegram notification: {response.status_code}")
+                logger.error(f"Response: {response.text}")
+                return False
+                
     except Exception as e:
         logger.error(f"❌ Error sending Telegram notification: {str(e)}")
         return False
