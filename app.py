@@ -71,7 +71,7 @@ def get_locale():
     # Fallback to browser language
     return request.accept_languages.best_match(app.config['LANGUAGES']) or app.config['BABEL_DEFAULT_LOCALE']
 
-def send_tailored_payment_notification(customer_name, tracking_code, amount, payment_type, transaction_id, photo_file=None):
+def send_tailored_payment_notification(customer_name, tracking_code, amount, payment_type, transaction_id, photo_file=None, photo_path=None):
     """
     Send tailored payment notification to Telegram with photo and conditional footer
     """
@@ -127,7 +127,7 @@ def send_tailored_payment_notification(customer_name, tracking_code, amount, pay
     # Send photo with caption
     try:
         if photo_file:
-            # Send with photo
+            # Send with photo file
             url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendPhoto"
             
             files = {'photo': (f"{tracking_code}.jpg", photo_file, 'image/jpeg')}
@@ -151,6 +151,32 @@ def send_tailored_payment_notification(customer_name, tracking_code, amount, pay
                 logger.error(f"❌ Failed to send Telegram photo: {response.status_code}")
                 logger.error(f"Response: {response.text}")
                 return False
+        elif photo_path:
+            # Send with photo path
+            url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendPhoto"
+            
+            with open(photo_path, 'rb') as f:
+                files = {'photo': (f"{tracking_code}.jpg", f, 'image/jpeg')}
+                data = {
+                    'chat_id': CHAT_ID,
+                    'caption': caption,
+                    'parse_mode': 'HTML'
+                }
+                
+                logger.info(f"Sending photo to URL: {url}")
+                logger.info(f"Photo data: chat_id={CHAT_ID}, caption_length={len(caption)}")
+                
+                response = requests.post(url, files=files, data=data, timeout=10)
+                logger.info(f"Photo response status: {response.status_code}")
+                logger.info(f"Photo response body: {response.text}")
+                
+                if response.status_code == 200:
+                    logger.info("✅ Telegram payment notification with photo sent successfully")
+                    return True
+                else:
+                    logger.error(f"❌ Failed to send Telegram photo: {response.status_code}")
+                    logger.error(f"Response: {response.text}")
+                    return False
         else:
             # Send text message only
             url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"

@@ -813,6 +813,26 @@ def zaincash_payment():
                     # Generate transaction ID
                     transaction_id = f"ZAINCASH_{payment_type.upper()}_{tracking_code}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                     
+                    # Prepare photo file for notification
+                    photo_file = None
+                    photo_path = None
+                    
+                    # Check if receipt was just uploaded for this payment
+                    if receipt_path:
+                        try:
+                            # Get full path to receipt
+                            receipt_full_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), receipt_path)
+                            print(f"📄 Preparing receipt image for Zain Cash {payment_type} payment: {receipt_full_path}")
+                            
+                            if os.path.exists(receipt_full_path):
+                                photo_path = receipt_full_path
+                                print("✅ Receipt image path set for notification")
+                            else:
+                                print(f"❌ Receipt file not found: {receipt_full_path}")
+                                
+                        except Exception as receipt_error:
+                            print(f"❌ Error loading receipt image: {receipt_error}")
+                    
                     # Send notification
                     notification_success = send_tailored_payment_notification(
                         customer_name=order_data.get('name', 'Unknown'),
@@ -820,7 +840,8 @@ def zaincash_payment():
                         amount=f"{amount:.2f}",
                         payment_type=payment_type,
                         transaction_id=transaction_id,
-                        photo_file=None
+                        photo_file=photo_file,
+                        photo_path=photo_path
                     )
                     
                     if notification_success:
@@ -1054,16 +1075,17 @@ def paypal_payment():
                     
                     # Prepare photo file for notification
                     photo_file = None
-                    if receipt_path and payment_type == 'deposit':
+                    photo_path = None
+                    
+                    if receipt_path:
                         try:
                             # Get full path to receipt
                             receipt_full_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), receipt_path)
-                            print(f"📄 Preparing receipt image for first payment: {receipt_full_path}")
+                            print(f"📄 Preparing receipt image for {payment_type} payment: {receipt_full_path}")
                             
                             if os.path.exists(receipt_full_path):
-                                with open(receipt_full_path, 'rb') as f:
-                                    photo_file = f.read()
-                                print("✅ Receipt image loaded for notification")
+                                photo_path = receipt_full_path
+                                print("✅ Receipt image path set for notification")
                             else:
                                 print(f"❌ Receipt file not found: {receipt_full_path}")
                                 
@@ -1081,7 +1103,8 @@ def paypal_payment():
                         amount=f"{amount:.2f}",
                         payment_type=payment_type,
                         transaction_id=transaction_id,
-                        photo_file=photo_file
+                        photo_file=photo_file,
+                        photo_path=photo_path
                     )
                     
                     if notification_success:
