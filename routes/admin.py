@@ -537,25 +537,39 @@ def auto_update_order_amounts():
     try:
         from flask import request, jsonify
         from flask_wtf.csrf import validate_csrf
+        import logging
+        
+        logging.info(f"=== auto_update_order_amounts called ===")
+        logging.info(f"Request method: {request.method}")
+        logging.info(f"Content-Type: {request.content_type}")
+        logging.info(f"Is JSON: {request.is_json}")
         
         # Get JSON data
         if not request.is_json:
+            logging.error("Request is not JSON")
             return jsonify({'success': False, 'message': 'Content-Type must be application/json'}), 400
         
         data = request.get_json()
         if not data:
+            logging.error("No JSON data provided")
             return jsonify({'success': False, 'message': 'No JSON data provided'}), 400
+        
+        logging.info(f"Received data: {data}")
         
         # Validate CSRF token
         try:
             validate_csrf(data.get('csrf_token'))
-        except:
+            logging.info("CSRF token validated successfully")
+        except Exception as e:
+            logging.error(f"CSRF token validation failed: {str(e)}")
             return jsonify({'success': False, 'message': 'Invalid CSRF token'}), 400
         
         # Get JSON data
         order_id = data.get('order_id')
         total_price = data.get('total_price', '0')
         deposit_amount = data.get('deposit_amount', '0')
+        
+        logging.info(f"Order ID: {order_id}, Total: {total_price}, Deposit: {deposit_amount}")
         
         if not order_id:
             return jsonify({'success': False, 'message': 'Order ID is required'}), 400
@@ -598,12 +612,14 @@ def auto_update_order_amounts():
         )
         
         if result.modified_count > 0:
+            logging.info(f"Order {order_id} updated successfully")
             return jsonify({
                 'success': True, 
                 'message': 'Order amounts updated successfully',
                 'remaining_balance': remaining
             })
         else:
+            logging.warning(f"Order {order_id} not found or no changes made")
             return jsonify({'success': False, 'message': 'Order not found or no changes made'}), 404
             
     except Exception as e:
