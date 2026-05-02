@@ -794,7 +794,7 @@ def zaincash_payment():
                 order_data = mongo.db.orders.find_one({'_id': string_to_object_id(order_id)})
                 if order_data:
                     # Import the notification function from app
-                    from app import send_payment_notification
+                    from app import send_tailored_payment_notification
                     
                     # Determine amount based on payment type
                     if payment_type == 'deposit':
@@ -814,12 +814,13 @@ def zaincash_payment():
                     transaction_id = f"ZAINCASH_{payment_type.upper()}_{tracking_code}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                     
                     # Send notification
-                    notification_success = send_payment_notification(
+                    notification_success = send_tailored_payment_notification(
                         customer_name=order_data.get('name', 'Unknown'),
                         tracking_code=tracking_code,
                         amount=f"{amount:.2f}",
                         payment_type=payment_type,
-                        transaction_id=transaction_id
+                        transaction_id=transaction_id,
+                        photo_file=None
                     )
                     
                     if notification_success:
@@ -937,7 +938,7 @@ def paypal_payment():
                 order_data = mongo.db.orders.find_one({'_id': string_to_object_id(order_id)})
                 if order_data:
                     # Import the notification functions from app
-                    from app import send_payment_notification, send_telegram_photo
+                    from app import send_tailored_payment_notification, send_telegram_photo
                     
                     # Determine amount based on payment type
                     if payment_type == 'deposit':
