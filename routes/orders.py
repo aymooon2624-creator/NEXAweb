@@ -239,10 +239,10 @@ Remaining Amount: ${total_price - deposit_amount}
                 print("❌ Telegram credentials not configured")
             else:
                 try:
-                    # 1. Send basic text message with order info
+                    # 1. Send basic order details as text message
                     text_message = f"""🆕 <b>NEW ORDER RECEIVED</b> 🆕
 
-� <b>Customer:</b> {name}
+👤 <b>Customer:</b> {name}
 📧 <b>Email:</b> {email}
 📱 <b>Phone:</b> {phone}
 🏷️ <b>Tracking Code:</b> <code>{tracking_code}</code>
@@ -252,11 +252,7 @@ Remaining Amount: ${total_price - deposit_amount}
 ⏰ <b>Date:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
 📝 <b>Project Details:</b>
-{details[:200]}{'...' if len(details) > 200 else ''}
-
-{'─' * 30}
-🎯 <i>Order submitted successfully</i> 🎯
-{'─' * 30}"""
+{details[:200]}{'...' if len(details) > 200 else ''}"""
 
                     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
                     payload = {
@@ -268,17 +264,17 @@ Remaining Amount: ${total_price - deposit_amount}
                     
                     response = requests.post(url, json=payload, timeout=10)
                     if response.status_code == 200:
-                        print("✅ Text message sent successfully")
+                        print("✅ Order details sent successfully")
                     else:
-                        print(f"❌ Failed to send text message: {response.status_code}")
+                        print(f"❌ Failed to send order details: {response.status_code}")
                 
-                    # 2. Send project details as document
+                    # 2. Send project details as document (if exists)
                     if os.path.exists(temp_details_path):
                         with open(temp_details_path, 'rb') as doc_file:
                             files = {'document': (details_filename, doc_file, 'text/plain')}
                             data = {
                                 'chat_id': CHAT_ID,
-                                'caption': f"� <b>Project Details File</b>\n\n🏷️ <code>{tracking_code}</code>\n👤 {name}\n📋 {project_type}",
+                                'caption': f"📄 <b>Project Details File</b>\n\n🏷️ <code>{tracking_code}</code>\n👤 {name}\n📋 {project_type}",
                                 'parse_mode': 'HTML'
                             }
                             
@@ -290,7 +286,7 @@ Remaining Amount: ${total_price - deposit_amount}
                             else:
                                 print(f"❌ Failed to send document: {doc_response.status_code}")
                     
-                    # 3. Send image if uploaded
+                    # 3. Send image if uploaded (if exists)
                     if temp_image_path and os.path.exists(temp_image_path):
                         with open(temp_image_path, 'rb') as img_file:
                             files = {'photo': (image_filename, img_file, 'image/jpeg')}
@@ -307,6 +303,35 @@ Remaining Amount: ${total_price - deposit_amount}
                                 print("✅ Image sent successfully")
                             else:
                                 print(f"❌ Failed to send image: {photo_response.status_code}")
+                    
+                    # 4. Send final separator message with two lines
+                    separator_message = f"""{'=' * 50}
+🎯 <i>Order submitted successfully</i> 🎯
+{'=' * 50}
+
+<b>Order Complete</b> ✅
+🏷️ <code>{tracking_code}</code>
+👤 {name}
+📋 {project_type}
+💰 ${total_price}
+
+{'─' * 50}
+<b>END OF ORDER</b>
+{'─' * 50}"""
+                    
+                    separator_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+                    separator_payload = {
+                        'chat_id': CHAT_ID,
+                        'text': separator_message,
+                        'parse_mode': 'HTML',
+                        'disable_web_page_preview': True
+                    }
+                    
+                    separator_response = requests.post(separator_url, json=separator_payload, timeout=10)
+                    if separator_response.status_code == 200:
+                        print("✅ Separator message sent successfully")
+                    else:
+                        print(f"❌ Failed to send separator message: {separator_response.status_code}")
                 
                 except Exception as e:
                     print(f"❌ Error sending Telegram notifications: {e}")
