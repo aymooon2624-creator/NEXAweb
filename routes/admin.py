@@ -536,6 +536,13 @@ def auto_update_order_amounts():
     """Auto-update order amounts immediately without page refresh"""
     try:
         from flask import request, jsonify
+        from flask_wtf.csrf import validate_csrf
+        
+        # Validate CSRF token
+        try:
+            validate_csrf(request.form.get('csrf_token'))
+        except:
+            return jsonify({'success': False, 'message': 'Invalid CSRF token'}), 400
         
         # Get form data
         order_id = request.form.get('order_id')
@@ -565,6 +572,11 @@ def auto_update_order_amounts():
         # Update MongoDB
         mongo = get_mongo()
         from models import string_to_object_id
+        
+        # First check if order exists
+        order_data = mongo.db.orders.find_one({'_id': string_to_object_id(order_id)})
+        if not order_data:
+            return jsonify({'success': False, 'message': 'Order not found'}), 404
         
         update_data = {
             'total_price': total,

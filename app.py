@@ -83,7 +83,7 @@ def send_payment_notification(customer_name, tracking_code, amount, payment_type
     CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
     
     # Validate required environment variables
-    if not TELEGRAM_TOKEN or not CHAT_ID:
+    if not TELEGRAM_BOT_TOKEN or not CHAT_ID:
         logger.error("Telegram configuration missing - check environment variables")
         return False
     

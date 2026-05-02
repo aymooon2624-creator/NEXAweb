@@ -969,6 +969,7 @@
                     'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
                 body: new URLSearchParams({
+                    csrf_token: document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     order_id: orderId,
                     total_price: total,
                     deposit_amount: deposit
