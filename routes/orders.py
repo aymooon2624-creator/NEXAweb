@@ -164,12 +164,17 @@ def submit_order():
                     temp_dir = os.path.join(os.getcwd(), 'temp')
                     os.makedirs(temp_dir, exist_ok=True)
                     
-                    # Save image temporarily with tracking code name
-                    image_filename = f"{tracking_code}.{file_extension}"
-                    temp_image_path = os.path.join(temp_dir, image_filename)
+                    # Save image to permanent uploads folder
+                    uploads_dir = os.path.join(os.getcwd(), 'static', 'uploads')
+                    os.makedirs(uploads_dir, exist_ok=True)
                     
-                    image.save(temp_image_path)
-                    print(f"🖼️ Image saved temporarily: {temp_image_path}")
+                    # Save with tracking code name
+                    image_filename = f"{tracking_code}.{file_extension}"
+                    permanent_image_path = os.path.join(uploads_dir, image_filename)
+                    
+                    image.save(permanent_image_path)
+                    temp_image_path = permanent_image_path  # Use permanent path for Telegram
+                    print(f"🖼️ Image saved permanently: {permanent_image_path}")
                     
                 except Exception as e:
                     print(f"❌ Error processing image upload: {e}")
@@ -184,7 +189,7 @@ def submit_order():
             project_type=project_type,
             details=details,
             tracking_code=tracking_code,
-            original_filename=tracking_code,  # Set original_filename to tracking_code
+            original_filename=image_filename if image_filename else tracking_code,  # Use actual image filename
             total_price=total_price,
             deposit_amount=deposit_amount
         )
