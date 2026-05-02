@@ -8,7 +8,7 @@ from flask_login import login_required, current_user
 from models import Project, Order, SecurityLog, Testimonial
 from database import get_mongo
 
-admin_bp = Blueprint('admin', __name__, url_prefix='/admin', strict_slashes=False)
+admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 
 @admin_bp.route('/')
