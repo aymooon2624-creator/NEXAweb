@@ -462,6 +462,14 @@ def update_status(order_id):
 def delete_order(order_id):
     """Delete order (admin only)"""
     try:
+        # Validate CSRF token
+        from flask_wtf.csrf import validate_csrf
+        try:
+            validate_csrf(request.form.get('csrf_token'))
+        except:
+            flash('Invalid CSRF token. Please try again.', 'error')
+            return redirect(url_for('admin.admin_dashboard'))
+        
         # Get order data before deletion to clean up files
         mongo = get_mongo()
         from models import string_to_object_id
@@ -470,33 +478,29 @@ def delete_order(order_id):
         
         if order_data:
             tracking_code = order_data.get('tracking_code')
+            customer_name = order_data.get('name', 'Unknown')
             print(f"🗑️ Deleting order {order_id} with tracking code: {tracking_code}")
             
-            # Delete order attachments folder
-            if tracking_code:
-                attachments_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'order_attachments', tracking_code)
-                if os.path.exists(attachments_dir):
-                    try:
-                        import shutil
-                        shutil.rmtree(attachments_dir)
-                        print(f"📁 Deleted attachments folder: {attachments_dir}")
-                    except Exception as e:
-                        print(f"❌ Error deleting attachments folder: {e}")
-                
-                # Delete order details file
-                details_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'order_data', f"{tracking_code}.txt")
-                if os.path.exists(details_file):
-                    try:
-                        os.remove(details_file)
-                        print(f"📄 Deleted details file: {details_file}")
-                    except Exception as e:
-                        print(f"❌ Error deleting details file: {e}")
+            # Delete temporary files if they exist
+            temp_dir = os.path.join(os.getcwd(), 'temp')
+            if os.path.exists(temp_dir):
+                try:
+                    import shutil
+                    # Clean up temp files for this order
+                    for filename in os.listdir(temp_dir):
+                        if filename.startswith(tracking_code):
+                            temp_file = os.path.join(temp_dir, filename)
+                            if os.path.isfile(temp_file):
+                                os.remove(temp_file)
+                                print(f"�️ Deleted temp file: {temp_file}")
+                except Exception as e:
+                    print(f"❌ Error cleaning temp files: {e}")
         
         # Delete order from database
         success = Order.delete(order_id)
         
         if success:
-            flash('Order and all associated files deleted successfully!', 'success')
+            flash(f'Order for {customer_name} (Tracking Code: {tracking_code}) deleted successfully!', 'success')
             print(f"✅ Order {order_id} deleted successfully")
         else:
             flash('Error deleting order from database', 'error')
@@ -505,7 +509,7 @@ def delete_order(order_id):
         return redirect(url_for('admin.admin_dashboard'))
         
     except Exception as e:
-        logger.error(f"Error deleting order: {type(e).__name__}")
+        logger.error(f"Error deleting order: {type(e).__name__} - {str(e)}")
         flash('Error deleting order. Please try again.', 'error')
         return redirect(url_for('admin.admin_dashboard'))
 

@@ -444,7 +444,8 @@
                                         </div>
                                         <!-- Delete Button -->
                                         <form action="{{ url_for('orders.delete_order', order_id=order.id) }}" method="POST" style="display:inline;" 
-                                              onsubmit="return confirm('Are you sure you want to delete this order?');">
+                                              onsubmit="return confirm('Are you sure you want to delete this order? This action cannot be undone.');">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <input type="submit" value="Delete" 
                                                    class="delete-btn px-2 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg text-xs hover:bg-red-500/30 transition-all duration-300"
                                                    style="position: relative; z-index: 10;">
