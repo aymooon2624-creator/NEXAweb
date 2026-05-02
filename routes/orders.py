@@ -269,7 +269,8 @@ Remaining Amount: ${total_price - deposit_amount}
             return redirect(url_for('orders.order_form'))
             
     except Exception as e:
-        logger.error(f"Error in submit_order: {type(e).__name__}")
+        logger.error(f"Error in submit_order: {type(e).__name__} - {str(e)}")
+        print(f"❌ Error in submit_order: {type(e).__name__} - {str(e)}")
         flash('An error occurred while submitting your order. Please try again.', 'error')
         return redirect(url_for('orders.order_form'))
 
