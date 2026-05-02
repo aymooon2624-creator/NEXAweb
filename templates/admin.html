@@ -326,33 +326,43 @@
                                 
                                 <!-- Total Price -->
                                 <td class="px-4 py-4">
-                                    <input type="number" 
-                                           id="total_price_{{ order.id }}" 
-                                           value="{{ order.total_price or 0.0 }}" 
-                                           step="0.01" 
-                                           min="0"
-                                           class="w-24 px-2 py-1 bg-slate-800/50 border border-cyber-cyan/30 rounded text-cyber-purple font-semibold text-sm focus:border-cyber-cyan focus:outline-none"
-                                           onblur="autoUpdateOrderPrice('{{ order.id }}')"
-                                           onchange="autoUpdateOrderPrice('{{ order.id }}')">
+                                    <div class="flex items-center space-x-2">
+                                        <input type="number" 
+                                               id="total_price_{{ order.id }}" 
+                                               value="{{ order.total_price or 0.0 }}" 
+                                               step="0.01" 
+                                               min="0"
+                                               class="w-24 px-2 py-1 bg-slate-800/50 border border-cyber-cyan/30 rounded text-cyber-purple font-semibold text-sm focus:border-cyber-cyan focus:outline-none">
+                                    </div>
                                 </td>
                                 
                                 <!-- Deposit Amount -->
                                 <td class="px-4 py-4">
-                                    <input type="number" 
-                                           id="deposit_amount_{{ order.id }}" 
-                                           value="{{ order.deposit_amount or 0.0 }}" 
-                                           step="0.01" 
-                                           min="0"
-                                           class="w-24 px-2 py-1 bg-slate-800/50 border border-cyber-cyan/30 rounded text-cyber-teal font-semibold text-sm focus:border-cyber-cyan focus:outline-none"
-                                           onblur="autoUpdateOrderPrice('{{ order.id }}')"
-                                           onchange="autoUpdateOrderPrice('{{ order.id }}')">
+                                    <div class="flex items-center space-x-2">
+                                        <input type="number" 
+                                               id="deposit_amount_{{ order.id }}" 
+                                               value="{{ order.deposit_amount or 0.0 }}" 
+                                               step="0.01" 
+                                               min="0"
+                                               class="w-24 px-2 py-1 bg-slate-800/50 border border-cyber-cyan/30 rounded text-cyber-teal font-semibold text-sm focus:border-cyber-cyan focus:outline-none">
+                                    </div>
                                 </td>
                                 
                                 <!-- Remaining Amount -->
                                 <td class="px-4 py-4">
-                                    <span id="remaining_amount_{{ order.id }}" class="text-cyber-orange font-semibold">
-                                        ${{ "%.2f"|format(order.remaining_amount) }}
-                                    </span>
+                                    <div class="flex items-center space-x-2">
+                                        <span id="remaining_amount_{{ order.id }}" class="text-cyber-orange font-semibold">
+                                            ${{ "%.2f"|format(order.remaining_amount) }}
+                                        </span>
+                                    </div>
+                                </td>
+                                
+                                <!-- Update Button -->
+                                <td class="px-4 py-4">
+                                    <button onclick="updateOrderPrice('{{ order.id }}')" 
+                                            class="px-3 py-1 bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/30 rounded text-xs hover:bg-cyber-cyan/30 transition-all duration-300 font-semibold">
+                                        💰 Update
+                                    </button>
                                 </td>
                                 
                                 <!-- Payment Status -->
@@ -927,15 +937,16 @@
             }, 4000);
         }
         
-        // Auto-update order price function (immediate update without refresh)
-        function autoUpdateOrderPrice(orderId) {
-            console.log('🔄 Auto-update called for order:', orderId);
+        // Update order price function (manual update with button click)
+        function updateOrderPrice(orderId) {
+            console.log('� Update button clicked for order:', orderId);
             
             const totalPriceElement = document.getElementById(`total_price_${orderId}`);
             const depositAmountElement = document.getElementById(`deposit_amount_${orderId}`);
             
             if (!totalPriceElement || !depositAmountElement) {
                 console.error('❌ Could not find input elements for order:', orderId);
+                showCyberToast('❌ Error: Could not find price inputs', 'error');
                 return;
             }
             
@@ -944,9 +955,20 @@
             
             console.log('📊 Values:', { totalPrice, depositAmount });
             
-            // Calculate remaining amount locally for immediate feedback
+            // Validate values
             const total = parseFloat(totalPrice) || 0.0;
             const deposit = parseFloat(depositAmount) || 0.0;
+            
+            if (total < 0 || deposit < 0) {
+                showCyberToast('❌ Prices cannot be negative', 'error');
+                return;
+            }
+            
+            if (deposit > total) {
+                showCyberToast('❌ Deposit cannot exceed total price', 'error');
+                return;
+            }
+            
             const remaining = Math.max(0.0, total - deposit);
             
             console.log('💰 Calculation:', { total, deposit, remaining });
